@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人週表課表</title>
+    <title>個人週表課表 (精確到分鐘)</title>
     <style>
         :root {
             --primary-color: #4a90e2;
             --border-color: #e0e0e0;
             --header-bg: #f5f7fa;
-            --grid-size: 50px;
+            --grid-size: 60px; /* 每 1 小時的高度 (px) */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -29,10 +29,36 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        .schedule-grid {
+        /* 外層網格容器 */
+        .schedule-wrapper {
+            display: flex;
+            min-width: 470px;
+            position: relative;
+        }
+
+        /* 頂部星期標頭 */
+        .header-row {
             display: grid;
             grid-template-columns: 50px repeat(7, minmax(60px, 1fr));
-            grid-template-rows: 35px repeat(15, var(--grid-size));
+            min-width: 470px;
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: var(--header-bg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header-cell {
+            font-weight: bold; font-size: 0.85rem; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            color: #555; border-right: 1px solid var(--border-color);
+        }
+
+        /* 時間軸與網格主體 */
+        .grid-body {
+            display: grid;
+            grid-template-columns: 50px repeat(7, minmax(60px, 1fr));
+            grid-template-rows: repeat(15, var(--grid-size));
             min-width: 470px;
             position: relative;
         }
@@ -45,31 +71,34 @@
         }
         .grid-cell:hover { background-color: #f0f7ff; }
 
-        .header-cell {
-            background-color: var(--header-bg); font-weight: bold; font-size: 0.85rem;
-            display: flex; align-items: center; justify-content: center;
-            position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border-color); color: #555;
-        }
-
         .time-cell {
             background-color: var(--header-bg); font-size: 0.75rem;
             display: flex; align-items: center; justify-content: center;
             position: sticky; left: 0; z-index: 2; color: #666; border-right: 2px solid var(--border-color);
         }
 
-        .top-left-cell { position: sticky; top: 0; left: 0; z-index: 3; background-color: var(--header-bg); }
+        /* 課程卡片容器 (絕對定位實現精確到分鐘的排版) */
+        .course-layer {
+            position: absolute;
+            top: 0; left: 50px; right: 0; bottom: 0;
+            pointer-events: none;
+        }
 
         .course-card {
-            margin: 2px; padding: 4px; border-radius: 6px; color: #fff;
+            position: absolute;
+            pointer-events: auto;
+            border-radius: 6px; color: #fff; padding: 4px;
             font-size: 0.75rem; display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer;
+            box-sizing: border-box;
         }
 
         .course-title { font-weight: bold; margin-bottom: 2px; }
         .course-time { font-size: 0.65rem; opacity: 0.9; }
 
+        /* 編輯彈窗樣式 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 10; justify-content: center; align-items: center;
@@ -101,8 +130,9 @@
     </div>
 
     <div class="schedule-container">
-        <div class="schedule-grid" id="scheduleGrid">
-            <div class="grid-cell top-left-cell"></div>
+        <!-- 固定表頭 -->
+        <div class="header-row">
+            <div class="header-cell"></div>
             <div class="header-cell">週日</div>
             <div class="header-cell">週一</div>
             <div class="header-cell">週二</div>
@@ -111,19 +141,27 @@
             <div class="header-cell">週五</div>
             <div class="header-cell">週六</div>
         </div>
+
+        <div class="schedule-wrapper">
+            <!-- 網格主體 -->
+            <div class="grid-body" id="gridBody"></div>
+            <!-- 課程卡片繪製層 -->
+            <div class="course-layer" id="courseLayer"></div>
+        </div>
     </div>
 
-    <p class="tip">💡 點擊空白格可新增課程；點擊已有課程可編輯或刪除</p>
+    <p class="tip">💡 點擊空白格新增；點擊課程卡片可精確修改時間或刪除</p>
 
+    <!-- 編輯/新增課表彈窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：數學">
+                <input type="text" id="courseTitleInput" placeholder="例如：高等數學">
             </div>
             <div class="form-group">
-                <label>星期 (橫向範圍)</label>
+                <label>星期 (橫向跨度)</label>
                 <div style="display: flex; gap: 5px;">
                     <select id="startDaySelect">
                         <option value="0">週日</option><option value="1">週一</option>
@@ -141,16 +179,12 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>時間 (縱向範圍)</label>
-                <div style="display: flex; gap: 5px;">
-                    <select id="startHourSelect"></select>
-                    <span style="align-self: center;">跨</span>
-                    <select id="hourSpanSelect">
-                        <option value="1">1小時</option><option value="2">2小時</option>
-                        <option value="3">3小時</option><option value="4">4小時</option>
-                        <option value="5">5小時</option>
-                    </select>
-                </div>
+                <label>開始時間 (精確到分)</label>
+                <input type="time" id="startTimeInput" min="06:00" max="21:00" value="08:00">
+            </div>
+            <div class="form-group">
+                <label>結束時間 (精確到分)</label>
+                <input type="time" id="endTimeInput" min="06:00" max="21:00" value="09:00">
             </div>
             <div class="form-group">
                 <label>卡片顏色</label>
@@ -165,54 +199,66 @@
     </div>
 
     <script>
-        const gridContainer = document.getElementById('scheduleGrid');
+        const gridBody = document.getElementById('gridBody');
+        const courseLayer = document.getElementById('courseLayer');
         const modalOverlay = document.getElementById('modalOverlay');
-        const startHourSelect = document.getElementById('startHourSelect');
-        
-        let courses = JSON.parse(localStorage.getItem('my_schedule_data')) || [];
+        const HOUR_HEIGHT = 60; // 1 小時 60px，即 1 分鐘 = 1px
+
+        let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
         let currentEditId = null;
 
-        for (let h = 6; h <= 20; h++) {
-            const opt = document.createElement('option');
-            opt.value = h;
-            opt.textContent = `${h}:00`;
-            startHourSelect.appendChild(opt);
-        }
-
+        // 初始化網格背景 (早上 06:00 至 晚上 21:00)
         for (let hour = 6; hour <= 20; hour++) {
             const timeCell = document.createElement('div');
             timeCell.className = 'grid-cell time-cell';
-            timeCell.textContent = `${hour}:00`;
-            gridContainer.appendChild(timeCell);
+            timeCell.textContent = `${hour < 10 ? '0' + hour : hour}:00`;
+            gridBody.appendChild(timeCell);
 
             for (let day = 0; day < 7; day++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = 'grid-cell';
-                emptyCell.onclick = () => openAddModal(day, hour);
-                gridContainer.appendChild(emptyCell);
+                const startH = hour < 10 ? '0' + hour : hour;
+                const endH = (hour + 1) < 10 ? '0' + (hour + 1) : (hour + 1);
+                emptyCell.onclick = () => openAddModal(day, `${startH}:00`, `${endH}:00`);
+                gridBody.appendChild(emptyCell);
             }
         }
 
+        // 時間字串轉分鐘數 (如 "08:30" -> 510)
+        function timeToMinutes(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // 渲染所有課程卡片
         function renderCourses() {
-            document.querySelectorAll('.course-card').forEach(el => el.remove());
+            courseLayer.innerHTML = '';
 
             courses.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.style.backgroundColor = c.color;
 
-                const colStart = c.startDay + 2;
-                const colEnd = colStart + c.daySpan;
-                const rowStart = (c.startHour - 6) + 2;
-                const rowEnd = rowStart + c.hourSpan;
+                const startMin = timeToMinutes(c.startTime);
+                const endMin = timeToMinutes(c.endTime);
+                const baseMin = 6 * 60; // 基礎起算點 06:00
 
-                card.style.gridColumn = `${colStart} / ${colEnd}`;
-                card.style.gridRow = `${rowStart} / ${rowEnd}`;
+                // 計算縱向 Top 位置與 Height (1分鐘 = 1px)
+                const top = ((startMin - baseMin) / 60) * HOUR_HEIGHT;
+                const height = ((endMin - startMin) / 60) * HOUR_HEIGHT;
 
-                const endHour = c.startHour + c.hourSpan;
+                // 計算橫向 Left 位置與 Width
+                const leftPercent = (c.startDay / 7) * 100;
+                const widthPercent = (c.daySpan / 7) * 100;
+
+                card.style.top = `${top + 1}px`;
+                card.style.height = `${Math.max(height - 2, 20)}px`;
+                card.style.left = `calc(${leftPercent}% + 2px)`;
+                card.style.width = `calc(${widthPercent}% - 4px)`;
+
                 card.innerHTML = `
                     <div class="course-title">${c.title}</div>
-                    <div class="course-time">${c.startHour}:00 - ${endHour}:00</div>
+                    <div class="course-time">${c.startTime} - ${c.endTime}</div>
                 `;
 
                 card.onclick = (e) => {
@@ -220,18 +266,18 @@
                     openEditModal(c.id);
                 };
 
-                gridContainer.appendChild(card);
+                courseLayer.appendChild(card);
             });
         }
 
-        function openAddModal(day, hour) {
+        function openAddModal(day, startTime, endTime) {
             currentEditId = null;
             document.getElementById('modalTitle').textContent = '新增課程';
             document.getElementById('courseTitleInput').value = '';
             document.getElementById('startDaySelect').value = day;
             document.getElementById('daySpanSelect').value = 1;
-            document.getElementById('startHourSelect').value = hour;
-            document.getElementById('hourSpanSelect').value = 1;
+            document.getElementById('startTimeInput').value = startTime;
+            document.getElementById('endTimeInput').value = endTime;
             document.getElementById('courseColorInput').value = '#4a90e2';
             document.getElementById('deleteBtn').style.display = 'none';
             modalOverlay.style.display = 'flex';
@@ -246,8 +292,8 @@
             document.getElementById('courseTitleInput').value = course.title;
             document.getElementById('startDaySelect').value = course.startDay;
             document.getElementById('daySpanSelect').value = course.daySpan;
-            document.getElementById('startHourSelect').value = course.startHour;
-            document.getElementById('hourSpanSelect').value = course.hourSpan;
+            document.getElementById('startTimeInput').value = course.startTime;
+            document.getElementById('endTimeInput').value = course.endTime;
             document.getElementById('courseColorInput').value = course.color;
             document.getElementById('deleteBtn').style.display = 'block';
             modalOverlay.style.display = 'flex';
@@ -259,8 +305,16 @@
 
         function saveCourse() {
             const title = document.getElementById('courseTitleInput').value.trim();
+            const startTime = document.getElementById('startTimeInput').value;
+            const endTime = document.getElementById('endTimeInput').value;
+
             if (!title) {
                 alert('請輸入課程名稱');
+                return;
+            }
+
+            if (timeToMinutes(startTime) >= timeToMinutes(endTime)) {
+                alert('結束時間必須晚於開始時間！');
                 return;
             }
 
@@ -269,8 +323,8 @@
                 title: title,
                 startDay: parseInt(document.getElementById('startDaySelect').value),
                 daySpan: parseInt(document.getElementById('daySpanSelect').value),
-                startHour: parseInt(document.getElementById('startHourSelect').value),
-                hourSpan: parseInt(document.getElementById('hourSpanSelect').value),
+                startTime: startTime,
+                endTime: endTime,
                 color: document.getElementById('courseColorInput').value
             };
 
@@ -300,7 +354,7 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem('my_schedule_data', JSON.stringify(courses));
+            localStorage.setItem('my_schedule_data_v2', JSON.stringify(courses));
             renderCourses();
         }
 
