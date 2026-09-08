@@ -9,7 +9,7 @@
             --primary-color: #4a90e2;
             --border-color: #e0e0e0;
             --header-bg: #f5f7fa;
-            --grid-size: 60px; /* 每 1 小時的高度 (px) */
+            --grid-size: 60px; /* 每 1 小時的高度 */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -29,14 +29,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 外層網格容器 */
-        .schedule-wrapper {
-            display: flex;
-            min-width: 470px;
-            position: relative;
-        }
-
-        /* 頂部星期標頭 */
         .header-row {
             display: grid;
             grid-template-columns: 50px repeat(7, minmax(60px, 1fr));
@@ -54,7 +46,12 @@
             color: #555; border-right: 1px solid var(--border-color);
         }
 
-        /* 時間軸與網格主體 */
+        .schedule-wrapper {
+            display: flex;
+            min-width: 470px;
+            position: relative;
+        }
+
         .grid-body {
             display: grid;
             grid-template-columns: 50px repeat(7, minmax(60px, 1fr));
@@ -77,28 +74,34 @@
             position: sticky; left: 0; z-index: 2; color: #666; border-right: 2px solid var(--border-color);
         }
 
-        /* 課程卡片容器 (絕對定位實現精確到分鐘的排版) */
         .course-layer {
             position: absolute;
             top: 0; left: 50px; right: 0; bottom: 0;
             pointer-events: none;
         }
 
+        /* 課程卡片樣式優化 */
         .course-card {
             position: absolute;
             pointer-events: auto;
-            border-radius: 6px; color: #fff; padding: 4px;
-            font-size: 0.75rem; display: flex; flex-direction: column;
+            border-radius: 4px; color: #fff; padding: 2px 4px;
+            display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer;
-            box-sizing: border-box;
+            box-sizing: border-box; line-height: 1.1;
         }
 
-        .course-title { font-weight: bold; margin-bottom: 2px; }
-        .course-time { font-size: 0.65rem; opacity: 0.9; }
+        /* 時間短時的橫向排版模式 */
+        .course-card.short-card {
+            flex-direction: row;
+            justify-content: space-around;
+            padding: 1px 2px;
+        }
 
-        /* 編輯彈窗樣式 */
+        .course-title { font-weight: bold; font-size: 0.72rem; }
+        .course-time { font-size: 0.6rem; opacity: 0.95; white-space: nowrap; }
+
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 10; justify-content: center; align-items: center;
@@ -130,7 +133,6 @@
     </div>
 
     <div class="schedule-container">
-        <!-- 固定表頭 -->
         <div class="header-row">
             <div class="header-cell"></div>
             <div class="header-cell">週日</div>
@@ -143,22 +145,19 @@
         </div>
 
         <div class="schedule-wrapper">
-            <!-- 網格主體 -->
             <div class="grid-body" id="gridBody"></div>
-            <!-- 課程卡片繪製層 -->
             <div class="course-layer" id="courseLayer"></div>
         </div>
     </div>
 
-    <p class="tip">💡 點擊空白格新增；點擊課程卡片可精確修改時間或刪除</p>
+    <p class="tip">💡 點擊空白格新增；點擊課程卡片可修改時間或刪除</p>
 
-    <!-- 編輯/新增課表彈窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：高等數學">
+                <input type="text" id="courseTitleInput" placeholder="例如：班會">
             </div>
             <div class="form-group">
                 <label>星期 (橫向跨度)</label>
@@ -202,12 +201,11 @@
         const gridBody = document.getElementById('gridBody');
         const courseLayer = document.getElementById('courseLayer');
         const modalOverlay = document.getElementById('modalOverlay');
-        const HOUR_HEIGHT = 60; // 1 小時 60px，即 1 分鐘 = 1px
+        const HOUR_HEIGHT = 60; // 1小時 = 60px
 
         let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
         let currentEditId = null;
 
-        // 初始化網格背景 (早上 06:00 至 晚上 21:00)
         for (let hour = 6; hour <= 20; hour++) {
             const timeCell = document.createElement('div');
             timeCell.className = 'grid-cell time-cell';
@@ -224,13 +222,11 @@
             }
         }
 
-        // 時間字串轉分鐘數 (如 "08:30" -> 510)
         function timeToMinutes(timeStr) {
             const [h, m] = timeStr.split(':').map(Number);
             return h * 60 + m;
         }
 
-        // 渲染所有課程卡片
         function renderCourses() {
             courseLayer.innerHTML = '';
 
@@ -238,28 +234,40 @@
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.style.backgroundColor = c.color;
+                card.title = `${c.title}\n${c.startTime} - ${c.endTime}`; // 滑鼠懸停顯示完整資訊
 
                 const startMin = timeToMinutes(c.startTime);
                 const endMin = timeToMinutes(c.endTime);
-                const baseMin = 6 * 60; // 基礎起算點 06:00
+                const baseMin = 6 * 60;
 
-                // 計算縱向 Top 位置與 Height (1分鐘 = 1px)
                 const top = ((startMin - baseMin) / 60) * HOUR_HEIGHT;
-                const height = ((endMin - startMin) / 60) * HOUR_HEIGHT;
+                const durationMinutes = endMin - startMin;
+                let calculatedHeight = (durationMinutes / 60) * HOUR_HEIGHT;
 
-                // 計算橫向 Left 位置與 Width
+                // 最小保障高度為 18px，避免極短時間完全消失
+                const finalHeight = Math.max(calculatedHeight, 18);
+
                 const leftPercent = (c.startDay / 7) * 100;
                 const widthPercent = (c.daySpan / 7) * 100;
 
                 card.style.top = `${top + 1}px`;
-                card.style.height = `${Math.max(height - 2, 20)}px`;
-                card.style.left = `calc(${leftPercent}% + 2px)`;
-                card.style.width = `calc(${widthPercent}% - 4px)`;
+                card.style.height = `${finalHeight - 2}px`;
+                card.style.left = `calc(${leftPercent}% + 1px)`;
+                card.style.width = `calc(${widthPercent}% - 2px)`;
 
-                card.innerHTML = `
-                    <div class="course-title">${c.title}</div>
-                    <div class="course-time">${c.startTime} - ${c.endTime}</div>
-                `;
+                // 如果時間長度小於 25 分鐘，切換為單行並排模式
+                if (durationMinutes < 25) {
+                    card.classList.add('short-card');
+                    card.innerHTML = `
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-time">${c.startTime}</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-time">${c.startTime}-${c.endTime}</div>
+                    `;
+                }
 
                 card.onclick = (e) => {
                     e.stopPropagation();
