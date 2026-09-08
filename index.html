@@ -1,0 +1,319 @@
+!DOCTYPE html
+html lang=zh-TW
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0
+    title個人週表課表title
+    style
+        root {
+            --primary-color #4a90e2;
+            --border-color #e0e0e0;
+            --header-bg #f5f7fa;
+            --grid-size 50px;
+        }
+
+         { box-sizing border-box; margin 0; padding 0; font-family -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; }
+        body { background-color #fafafa; padding 10px; }
+        
+        .header-title {
+            text-align center;
+            margin-bottom 10px;
+        }
+        h1 { font-size 1.2rem; color #333; display inline-block; }
+        
+        .clear-btn {
+            background #ff4d4f; color white; border none; padding 4px 8px;
+            border-radius 4px; font-size 0.75rem; margin-left 10px; cursor pointer;
+        }
+
+        .schedule-container {
+            width 100%; overflow-x auto; background #fff;
+            border-radius 8px; box-shadow 0 2px 8px rgba(0,0,0,0.1);
+            -webkit-overflow-scrolling touch;
+        }
+
+        .schedule-grid {
+            display grid;
+            grid-template-columns 50px repeat(7, minmax(60px, 1fr));
+            grid-template-rows 35px repeat(15, var(--grid-size));
+            min-width 470px;
+            position relative;
+        }
+
+        .grid-cell {
+            border-right 1px solid var(--border-color);
+            border-bottom 1px solid var(--border-color);
+            background-color #fff;
+            cursor pointer;
+        }
+        .grid-cellhover { background-color #f0f7ff; }
+
+        .header-cell {
+            background-color var(--header-bg); font-weight bold; font-size 0.85rem;
+            display flex; align-items center; justify-content center;
+            position sticky; top 0; z-index 2; border-bottom 2px solid var(--border-color); color #555;
+        }
+
+        .time-cell {
+            background-color var(--header-bg); font-size 0.75rem;
+            display flex; align-items center; justify-content center;
+            position sticky; left 0; z-index 2; color #666; border-right 2px solid var(--border-color);
+        }
+
+        .top-left-cell { position sticky; top 0; left 0; z-index 3; background-color var(--header-bg); }
+
+        .course-card {
+            margin 2px; padding 4px; border-radius 6px; color #fff;
+            font-size 0.75rem; display flex; flex-direction column;
+            justify-content center; align-items center; text-align center;
+            box-shadow 0 1px 3px rgba(0,0,0,0.15); z-index 1;
+            word-break break-all; overflow hidden; cursor pointer;
+        }
+
+        .course-title { font-weight bold; margin-bottom 2px; }
+        .course-time { font-size 0.65rem; opacity 0.9; }
+
+         編輯彈窗樣式 
+        .modal-overlay {
+            display none; position fixed; top 0; left 0; width 100%; height 100%;
+            background rgba(0,0,0,0.5); z-index 10; justify-content center; align-items center;
+        }
+        .modal {
+            background white; padding 20px; border-radius 8px; width 90%; max-width 350px;
+            box-shadow 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .modal h3 { margin-bottom 15px; font-size 1.1rem; }
+        .form-group { margin-bottom 12px; }
+        .form-group label { display block; font-size 0.8rem; margin-bottom 4px; color #666; }
+        .form-group input, .form-group select {
+            width 100%; padding 8px; border 1px solid #ccc; border-radius 4px; font-size 0.9rem;
+        }
+        .modal-actions { display flex; justify-content space-between; margin-top 15px; gap 8px; }
+        .btn { padding 8px 12px; border none; border-radius 4px; cursor pointer; font-size 0.85rem; flex 1; }
+        .btn-primary { background #4a90e2; color white; }
+        .btn-danger { background #ff4d4f; color white; }
+        .btn-secondary { background #ccc; color #333; }
+
+        .tip { text-align center; font-size 0.75rem; color #888; margin-top 8px; }
+    style
+head
+body
+
+    div class=header-title
+        h1我的週表課表h1
+        button class=clear-btn onclick=clearAllData()清空課表button
+    div
+
+    div class=schedule-container
+        div class=schedule-grid id=scheduleGrid
+            div class=grid-cell top-left-celldiv
+            div class=header-cell週日div
+            div class=header-cell週一div
+            div class=header-cell週二div
+            div class=header-cell週三div
+            div class=header-cell週四div
+            div class=header-cell週五div
+            div class=header-cell週六div
+        div
+    div
+
+    p class=tip💡 點擊空白格可新增課程；點擊已有課程可編輯或刪除p
+
+    !-- 編輯新增課表彈窗 --
+    div class=modal-overlay id=modalOverlay
+        div class=modal
+            h3 id=modalTitle新增課程h3
+            div class=form-group
+                label課程名稱label
+                input type=text id=courseTitleInput placeholder=例如：數學
+            div
+            div class=form-group
+                label星期 (橫向範圍)label
+                div style=display flex; gap 5px;
+                    select id=startDaySelect
+                        option value=0週日optionoption value=1週一option
+                        option value=2週二optionoption value=3週三option
+                        option value=4週四optionoption value=5週五option
+                        option value=6週六option
+                    select
+                    span style=align-self center;跨span
+                    select id=daySpanSelect
+                        option value=11天optionoption value=22天option
+                        option value=33天optionoption value=44天option
+                        option value=55天optionoption value=66天option
+                        option value=77天option
+                    select
+                div
+            div
+            div class=form-group
+                label時間 (縱向範圍)label
+                div style=display flex; gap 5px;
+                    select id=startHourSelectselect
+                    span style=align-self center;跨span
+                    select id=hourSpanSelect
+                        option value=11小時optionoption value=22小時option
+                        option value=33小時optionoption value=44小時option
+                        option value=55小時option
+                    select
+                div
+            div
+            div class=form-group
+                label卡片顏色label
+                input type=color id=courseColorInput value=#4a90e2
+            div
+            div class=modal-actions
+                button class=btn btn-secondary onclick=closeModal()取消button
+                button class=btn btn-danger id=deleteBtn onclick=deleteCourse() style=displaynone;刪除button
+                button class=btn btn-primary onclick=saveCourse()儲存button
+            div
+        div
+    div
+
+    script
+        const gridContainer = document.getElementById('scheduleGrid');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const startHourSelect = document.getElementById('startHourSelect');
+        
+        let courses = JSON.parse(localStorage.getItem('my_schedule_data'))  [];
+        let currentEditId = null;
+
+         初始化時間下拉選單 (600 - 2000)
+        for (let h = 6; h = 20; h++) {
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = `${h}00`;
+            startHourSelect.appendChild(opt);
+        }
+
+         初始化網格
+        for (let hour = 6; hour = 20; hour++) {
+            const timeCell = document.createElement('div');
+            timeCell.className = 'grid-cell time-cell';
+            timeCell.textContent = `${hour}00`;
+            gridContainer.appendChild(timeCell);
+
+            for (let day = 0; day  7; day++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'grid-cell';
+                emptyCell.onclick = () = openAddModal(day, hour);
+                gridContainer.appendChild(emptyCell);
+            }
+        }
+
+         渲染所有課程
+        function renderCourses() {
+            document.querySelectorAll('.course-card').forEach(el = el.remove());
+
+            courses.forEach(c = {
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                card.style.backgroundColor = c.color;
+
+                const colStart = c.startDay + 2;
+                const colEnd = colStart + c.daySpan;
+                const rowStart = (c.startHour - 6) + 2;
+                const rowEnd = rowStart + c.hourSpan;
+
+                card.style.gridColumn = `${colStart}  ${colEnd}`;
+                card.style.gridRow = `${rowStart}  ${rowEnd}`;
+
+                const endHour = c.startHour + c.hourSpan;
+                card.innerHTML = `
+                    div class=course-title${c.title}div
+                    div class=course-time${c.startHour}00 - ${endHour}00div
+                `;
+
+                card.onclick = (e) = {
+                    e.stopPropagation();
+                    openEditModal(c.id);
+                };
+
+                gridContainer.appendChild(card);
+            });
+        }
+
+        function openAddModal(day, hour) {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = '新增課程';
+            document.getElementById('courseTitleInput').value = '';
+            document.getElementById('startDaySelect').value = day;
+            document.getElementById('daySpanSelect').value = 1;
+            document.getElementById('startHourSelect').value = hour;
+            document.getElementById('hourSpanSelect').value = 1;
+            document.getElementById('courseColorInput').value = '#4a90e2';
+            document.getElementById('deleteBtn').style.display = 'none';
+            modalOverlay.style.display = 'flex';
+        }
+
+        function openEditModal(id) {
+            const course = courses.find(c = c.id === id);
+            if (!course) return;
+
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = '編輯課程';
+            document.getElementById('courseTitleInput').value = course.title;
+            document.getElementById('startDaySelect').value = course.startDay;
+            document.getElementById('daySpanSelect').value = course.daySpan;
+            document.getElementById('startHourSelect').value = course.startHour;
+            document.getElementById('hourSpanSelect').value = course.hourSpan;
+            document.getElementById('courseColorInput').value = course.color;
+            document.getElementById('deleteBtn').style.display = 'block';
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+        }
+
+        function saveCourse() {
+            const title = document.getElementById('courseTitleInput').value.trim();
+            if (!title) {
+                alert('請輸入課程名稱');
+                return;
+            }
+
+            const courseData = {
+                id currentEditId  Date.now(),
+                title title,
+                startDay parseInt(document.getElementById('startDaySelect').value),
+                daySpan parseInt(document.getElementById('daySpanSelect').value),
+                startHour parseInt(document.getElementById('startHourSelect').value),
+                hourSpan parseInt(document.getElementById('hourSpanSelect').value),
+                color document.getElementById('courseColorInput').value
+            };
+
+            if (currentEditId) {
+                courses = courses.map(c = c.id === currentEditId  courseData  c);
+            } else {
+                courses.push(courseData);
+            }
+
+            saveAndRender();
+            closeModal();
+        }
+
+        function deleteCourse() {
+            if (currentEditId && confirm('確定要刪除這個課程嗎？')) {
+                courses = courses.filter(c = c.id !== currentEditId);
+                saveAndRender();
+                closeModal();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('確定要清空所有課表資料嗎？')) {
+                courses = [];
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('my_schedule_data', JSON.stringify(courses));
+            renderCourses();
+        }
+
+         首次載入渲染
+        renderCourses();
+    script
+body
+html
