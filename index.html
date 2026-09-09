@@ -491,4 +491,33 @@
             document.getElementById('startDaySelect').value = nextDay;
             
             // 隱藏刪除與複製按鈕，保持新增狀態
-            document.getElem
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('copyBtn').style.display = 'none';
+            
+            alert('已為您複製課堂資訊！請選擇複製後目標的「星期」或「時間」，再點擊儲存。');
+        }
+
+        function deleteCourse() {
+            if (currentEditId && confirm('確定要刪除這個課程嗎？')) {
+                courses = courses.filter(c => c.id !== currentEditId);
+                saveAndRender();
+                closeModal();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('確定要清空所有課表資料嗎？')) {
+                courses = [];
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('my_schedule_data_v2', JSON.stringify(courses));
+            renderCourses();
+        }
+
+        renderCourses();
+    </script>
+</body>
+</html>
