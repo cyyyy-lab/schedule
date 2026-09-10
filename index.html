@@ -126,11 +126,11 @@
             line-height: 1.25; transition: transform 0.1s;
         }
 
-        .course-title { font-weight: bold; font-size: 0.75rem; }
-        .course-time { font-weight: bold; font-size: 0.7rem; opacity: 0.95; white-space: nowrap; }
-        .course-duration { font-size: 0.65rem; opacity: 0.85; white-space: nowrap; }
+        .course-title { font-weight: bold; }
+        .course-time { font-weight: bold; opacity: 0.95; white-space: nowrap; }
+        .course-duration { opacity: 0.85; white-space: nowrap; }
 
-        /* --- 1. 極短課程 (< 10 分鐘) --- */
+        /* --- 1. 小於 10 分鐘：併排微型字體 --- */
         .course-card.tiny-card {
             flex-direction: row; justify-content: center; align-items: center; gap: 3px; padding: 0 2px;
         }
@@ -138,7 +138,7 @@
         .course-card.tiny-card .course-time,
         .course-card.tiny-card .course-duration { font-size: 0.62rem; white-space: nowrap; }
 
-        /* --- 2. 短課程 (10 ~ 20 分鐘) --- */
+        /* --- 2. 10 分鐘 ~ 19 分鐘：併排，適度加大 --- */
         .course-card.short-card {
             flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
         }
@@ -146,10 +146,15 @@
         .course-card.short-card .course-time,
         .course-card.short-card .course-duration { font-size: 0.75rem; white-space: nowrap; }
 
-        /* --- 3. 大於或等於 1 小時 (≥ 60 分鐘) 的課程：字體放大 --- */
-        .course-card.xlarge-card .course-title { font-size: 0.95rem; margin-bottom: 3px; }
-        .course-card.xlarge-card .course-time { font-size: 0.85rem; }
-        .course-card.xlarge-card .course-duration { font-size: 0.78rem; }
+        /* --- 3. 20 分鐘 ~ 59 分鐘：垂直排列，適度加大 --- */
+        .course-card.medium-card .course-title { font-size: 0.85rem; margin-bottom: 2px; }
+        .course-card.medium-card .course-time { font-size: 0.78rem; }
+        .course-card.medium-card .course-duration { font-size: 0.7rem; }
+
+        /* --- 4. 大於或等於 1 小時 (≥ 60 分鐘)：垂直排列，再進一步加大 --- */
+        .course-card.xlarge-card .course-title { font-size: 1.0rem; margin-bottom: 3px; }
+        .course-card.xlarge-card .course-time { font-size: 0.88rem; }
+        .course-card.xlarge-card .course-duration { font-size: 0.8rem; }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -381,7 +386,7 @@
 
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime} (${durationText})`;
 
-                // 判斷時長並套用對應的字體與排版樣式
+                // 判斷時長並套用對應級距
                 if (durationMinutes < 10) {
                     // 小於 10 分鐘：併排微型字體
                     card.classList.add('tiny-card');
@@ -390,8 +395,8 @@
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
                         <div class="course-duration">(${durationText})</div>
                     `;
-                } else if (durationMinutes <= 20) {
-                    // 10 ~ 20 分鐘：併排，字體加大
+                } else if (durationMinutes <= 19) {
+                    // 10 ~ 19 分鐘：併排，適度加大字體
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -399,7 +404,7 @@
                         <div class="course-duration">(${durationText})</div>
                     `;
                 } else if (durationMinutes >= 60) {
-                    // 大於等於 1 小時 (≥ 60分鐘)：明顯放大字體，分行顯示
+                    // ≥ 1 小時 (≥ 60分鐘)：進一步放大字體，分行顯示
                     card.classList.add('xlarge-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -407,7 +412,8 @@
                         <div class="course-duration">${durationText}</div>
                     `;
                 } else {
-                    // 21 ~ 59 分鐘：標準大小，分行顯示
+                    // 20 ~ 59 分鐘：適度加大字體，分行顯示
+                    card.classList.add('medium-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
