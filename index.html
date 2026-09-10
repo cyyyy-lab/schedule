@@ -7,9 +7,8 @@
     <style>
         :root {
             --primary-color: #4a90e2;
-            --grid-size: 120px; /* 每 1 小時的高度為 120px */
+            --grid-size: 120px;
             
-            /* 預設白色主題變數 */
             --bg-color: #fafafa;
             --card-bg: #ffffff;
             --text-color: #333333;
@@ -19,7 +18,6 @@
             --hover-bg: #f0f7ff;
         }
 
-        /* 灰色主題 */
         body.theme-gray {
             --bg-color: #333333;
             --card-bg: #424242;
@@ -30,7 +28,6 @@
             --hover-bg: #505050;
         }
 
-        /* 黑色主題 */
         body.theme-black {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
@@ -41,7 +38,6 @@
             --hover-bg: #2c2c2c;
         }
 
-        /* 冷色主題 (淺色冷藍灰風格) */
         body.theme-cool {
             --bg-color: #eef3f8;
             --card-bg: #ffffff;
@@ -52,7 +48,6 @@
             --hover-bg: #dbe7f3;
         }
 
-        /* 暖色主題 (奶茶米色溫馨風格) */
         body.theme-warm {
             --bg-color: #f5f0eb;
             --card-bg: #fdfbf7;
@@ -74,135 +69,87 @@
             border-radius: 4px; font-size: 0.75rem; margin-left: 10px; cursor: pointer; vertical-align: middle;
         }
 
-        /* 主題切換按鈕區塊 */
         .theme-switcher {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 12px;
-            font-size: 0.8rem;
-            color: var(--subtext-color);
-            flex-wrap: wrap;
+            display: flex; justify-content: center; align-items: center; gap: 6px;
+            margin-bottom: 12px; font-size: 0.8rem; color: var(--subtext-color); flex-wrap: wrap;
         }
 
         .theme-btn {
-            border: 1px solid var(--border-color);
-            padding: 4px 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            background: var(--card-bg);
-            color: var(--text-color);
-            transition: all 0.2s;
+            border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 12px;
+            cursor: pointer; font-size: 0.75rem; background: var(--card-bg); color: var(--text-color); transition: all 0.2s;
         }
         .theme-btn:hover { opacity: 0.8; }
-        .theme-btn.active {
-            border-color: var(--primary-color);
-            background-color: var(--primary-color);
-            color: white;
-        }
+        .theme-btn.active { border-color: var(--primary-color); background-color: var(--primary-color); color: white; }
 
         .schedule-container {
-            width: 100%;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            overflow-x: auto;
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            width: 100%; max-height: calc(100vh - 120px); overflow-y: auto; overflow-x: auto;
+            background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             -webkit-overflow-scrolling: touch;
         }
 
-        .schedule-grid-wrapper {
-            min-width: 600px;
-            width: 100%;
-            position: relative;
-        }
+        .schedule-grid-wrapper { min-width: 600px; width: 100%; position: relative; }
 
         .grid-header {
-            display: grid;
-            grid-template-columns: 50px repeat(7, 1fr);
-            position: sticky;
-            top: 0;
-            z-index: 3;
-            background: var(--header-bg);
-            border-bottom: 2px solid var(--border-color);
+            display: grid; grid-template-columns: 50px repeat(7, 1fr); position: sticky; top: 0;
+            z-index: 3; background: var(--header-bg); border-bottom: 2px solid var(--border-color);
         }
 
         .header-cell {
-            font-weight: bold; font-size: 0.85rem; height: 35px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-color); border-right: 1px solid var(--border-color);
-            text-align: center;
+            font-weight: bold; font-size: 0.85rem; height: 35px; display: flex;
+            align-items: center; justify-content: center; color: var(--text-color);
+            border-right: 1px solid var(--border-color); text-align: center;
         }
 
         .grid-body {
-            display: grid;
-            grid-template-columns: 50px repeat(7, 1fr);
-            grid-template-rows: repeat(15, var(--grid-size));
-            position: relative;
+            display: grid; grid-template-columns: 50px repeat(7, 1fr);
+            grid-template-rows: repeat(15, var(--grid-size)); position: relative;
         }
 
-        .grid-cell {
-            border-right: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            cursor: pointer;
-        }
+        .grid-cell { border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); background-color: var(--card-bg); cursor: pointer; }
         .grid-cell:hover { background-color: var(--hover-bg); }
 
         .time-cell {
-            background-color: var(--header-bg); font-size: 0.75rem;
-            display: flex; align-items: flex-start; justify-content: center;
-            padding-top: 4px;
-            position: sticky; left: 0; z-index: 2; color: var(--subtext-color); border-right: 2px solid var(--border-color);
-            text-align: center;
+            background-color: var(--header-bg); font-size: 0.75rem; display: flex;
+            align-items: flex-start; justify-content: center; padding-top: 4px;
+            position: sticky; left: 0; z-index: 2; color: var(--subtext-color);
+            border-right: 2px solid var(--border-color); text-align: center;
         }
 
-        /* 課程卡片圖層 */
-        .course-layer {
-            position: absolute;
-            top: 0; left: 50px; right: 0; bottom: 0;
-            pointer-events: none;
-        }
+        .course-layer { position: absolute; top: 0; left: 50px; right: 0; bottom: 0; pointer-events: none; }
 
-        /* 課程卡片通用的置中樣式 */
+        /* 卡片共用樣式：所有文字均水平與垂直置中 */
         .course-card {
-            position: absolute;
-            pointer-events: auto;
-            border-radius: 4px; padding: 2px 4px;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
-            word-break: break-all; overflow: hidden; cursor: pointer;
-            box-sizing: border-box; line-height: 1.25;
-            transition: transform 0.1s;
+            position: absolute; pointer-events: auto; border-radius: 4px; padding: 2px 4px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
+            word-break: break-all; overflow: hidden; cursor: pointer; box-sizing: border-box;
+            line-height: 1.25; transition: transform 0.1s;
         }
 
         .course-title { font-weight: bold; font-size: 0.75rem; }
         .course-time { font-weight: bold; font-size: 0.7rem; opacity: 0.95; white-space: nowrap; }
         .course-duration { font-size: 0.65rem; opacity: 0.85; white-space: nowrap; }
 
-        /* 大於或等於 30 分鐘的課程：適當放大 */
-        .course-card.large-card .course-title { font-size: 0.85rem; margin-bottom: 2px; }
-        .course-card.large-card .course-time { font-size: 0.78rem; }
-        .course-card.large-card .course-duration { font-size: 0.7rem; }
+        /* --- 1. 極短課程 (< 10 分鐘) --- */
+        .course-card.tiny-card {
+            flex-direction: row; justify-content: center; align-items: center; gap: 3px; padding: 0 2px;
+        }
+        .course-card.tiny-card .course-title,
+        .course-card.tiny-card .course-time,
+        .course-card.tiny-card .course-duration { font-size: 0.62rem; white-space: nowrap; }
 
-        /* 小於 25 分鐘的課程：名字、時間和時長併排，且全置中 */
+        /* --- 2. 短課程 (10 ~ 20 分鐘) --- */
         .course-card.short-card {
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            padding: 0 4px;
+            flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
         }
         .course-card.short-card .course-title,
         .course-card.short-card .course-time,
-        .course-card.short-card .course-duration {
-            font-size: 0.68rem;
-            white-space: nowrap;
-        }
+        .course-card.short-card .course-duration { font-size: 0.75rem; white-space: nowrap; }
+
+        /* --- 3. 大於或等於 1 小時 (≥ 60 分鐘) 的課程：字體放大 --- */
+        .course-card.xlarge-card .course-title { font-size: 0.95rem; margin-bottom: 3px; }
+        .course-card.xlarge-card .course-time { font-size: 0.85rem; }
+        .course-card.xlarge-card .course-duration { font-size: 0.78rem; }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -219,23 +166,12 @@
             width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;
         }
 
-        .color-presets {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 6px;
-            flex-wrap: wrap;
-        }
+        .color-presets { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
         .color-preset-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: transform 0.1s;
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent;
+            cursor: pointer; transition: transform 0.1s;
         }
-        .color-preset-btn:hover {
-            transform: scale(1.15);
-        }
+        .color-preset-btn:hover { transform: scale(1.15); }
 
         .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; gap: 6px; flex-wrap: wrap; }
         .btn { padding: 8px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1; white-space: nowrap; text-align: center; }
@@ -254,7 +190,6 @@
         <button class="clear-btn" onclick="clearAllData()">清空課表</button>
     </div>
 
-    <!-- 背景顏色切換列 -->
     <div class="theme-switcher">
         <span>背景主題：</span>
         <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
@@ -266,7 +201,6 @@
 
     <div class="schedule-container">
         <div class="schedule-grid-wrapper">
-            <!-- 頂部星期標頭 -->
             <div class="grid-header">
                 <div class="header-cell"></div>
                 <div class="header-cell">週日</div>
@@ -278,22 +212,19 @@
                 <div class="header-cell">週六</div>
             </div>
 
-            <!-- 時間格線主體 -->
             <div class="grid-body" id="gridBody"></div>
-            <!-- 課程卡片圖層 -->
             <div class="course-layer" id="courseLayer"></div>
         </div>
     </div>
 
     <p class="tip">💡 點擊空白格新增；點擊課程卡片可修改時間、複製或刪除</p>
 
-    <!-- 編輯彈窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：10分鐘晨會">
+                <input type="text" id="courseTitleInput" placeholder="例如：團隊早會">
             </div>
             <div class="form-group">
                 <label>星期 (橫向跨度)</label>
@@ -314,15 +245,15 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>開始時間 (精確到分)</label>
+                <label>開始時間</label>
                 <input type="time" id="startTimeInput" min="06:00" max="21:00" value="08:00">
             </div>
             <div class="form-group">
-                <label>結束時間 (精確到分)</label>
+                <label>結束時間</label>
                 <input type="time" id="endTimeInput" min="06:00" max="21:00" value="08:30">
             </div>
             <div class="form-group">
-                <label>卡片底色 (低飽和柔和色系)</label>
+                <label>卡片底色</label>
                 <div class="color-presets">
                     <button class="color-preset-btn" style="background:#6b8eac" title="柔藍" onclick="selectColor('#6b8eac')"></button>
                     <button class="color-preset-btn" style="background:#7ca982" title="鼠尾草綠" onclick="selectColor('#7ca982')"></button>
@@ -355,14 +286,12 @@
         const modalOverlay = document.getElementById('modalOverlay');
         
         const HOUR_HEIGHT = 120;
-
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
 
         let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
         let currentEditId = null;
 
-        // --- 主題切換邏輯 ---
         function setTheme(theme) {
             document.body.classList.remove('theme-gray', 'theme-black', 'theme-cool', 'theme-warm');
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
@@ -388,7 +317,6 @@
         const savedTheme = localStorage.getItem('my_schedule_theme') || 'white';
         setTheme(savedTheme);
 
-        // --- 初始化表格 ---
         for (let hour = 6; hour <= 20; hour++) {
             const timeCell = document.createElement('div');
             timeCell.className = 'grid-cell time-cell';
@@ -410,13 +338,11 @@
             return h * 60 + m;
         }
 
-        // 計算時長顯示文字
         function getDurationText(minutes) {
             if (minutes < 60) {
                 return `${minutes}分鐘`;
             } else {
                 const hours = minutes / 60;
-                // 如果能整除則顯示整數，否則最多保留 1 位小數
                 return Number.isInteger(hours) ? `${hours}小時` : `${hours.toFixed(1)}小時`;
             }
         }
@@ -431,11 +357,8 @@
             courses.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'course-card';
-                const bgColor = c.color || DEFAULT_COLOR;
-                const finalTextColor = c.textColor || DEFAULT_TEXT_COLOR;
-
-                card.style.backgroundColor = bgColor;
-                card.style.color = finalTextColor;
+                card.style.backgroundColor = c.color || DEFAULT_COLOR;
+                card.style.color = c.textColor || DEFAULT_TEXT_COLOR;
 
                 const startMin = timeToMinutes(c.startTime);
                 const endMin = timeToMinutes(c.endTime);
@@ -458,25 +381,33 @@
 
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime} (${durationText})`;
 
-                // 判斷時間長短並設定對應樣式
-                if (durationMinutes < 25) {
-                    // 小於 25 分鐘：名字、時間(幾點到幾點)與時長併排，全置中
+                // 判斷時長並套用對應的字體與排版樣式
+                if (durationMinutes < 10) {
+                    // 小於 10 分鐘：併排微型字體
+                    card.classList.add('tiny-card');
+                    card.innerHTML = `
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-time">${c.startTime}-${c.endTime}</div>
+                        <div class="course-duration">(${durationText})</div>
+                    `;
+                } else if (durationMinutes <= 20) {
+                    // 10 ~ 20 分鐘：併排，字體加大
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
                         <div class="course-duration">(${durationText})</div>
                     `;
-                } else if (durationMinutes >= 30) {
-                    // 大於等於 30 分鐘：適當放大字體
-                    card.classList.add('large-card');
+                } else if (durationMinutes >= 60) {
+                    // 大於等於 1 小時 (≥ 60分鐘)：明顯放大字體，分行顯示
+                    card.classList.add('xlarge-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
                         <div class="course-duration">${durationText}</div>
                     `;
                 } else {
-                    // 25 ~ 29 分鐘標準大小
+                    // 21 ~ 59 分鐘：標準大小，分行顯示
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
