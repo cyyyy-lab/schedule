@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary-color: #4a90e2;
-            --grid-size: 60px; /* 每 1 小時的高度 */
+            --grid-size: 120px; /* 拉高格子：每 1 小時的高度調為 120px */
             
             /* 預設白色主題變數 */
             --bg-color: #fafafa;
@@ -105,6 +105,8 @@
 
         .schedule-container {
             width: 100%;
+            max-height: calc(100vh - 120px); /* 限制最高高度，確保放大時內部可滾動 */
+            overflow-y: auto;
             overflow-x: auto;
             background: var(--card-bg);
             border-radius: 8px;
@@ -152,7 +154,8 @@
 
         .time-cell {
             background-color: var(--header-bg); font-size: 0.75rem;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding-top: 4px;
             position: sticky; left: 0; z-index: 2; color: var(--subtext-color); border-right: 2px solid var(--border-color);
         }
 
@@ -171,14 +174,26 @@
             justify-content: center; align-items: center; text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer;
-            box-sizing: border-box; line-height: 1.1;
+            box-sizing: border-box; line-height: 1.15;
             transition: transform 0.1s;
         }
 
+        /* 針對 20 分鐘以下的極短課程優化排版 */
         .course-card.short-card {
             flex-direction: row;
-            justify-content: space-around;
-            padding: 1px 2px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+        .course-card.short-card .course-title {
+            font-size: 0.7rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .course-card.short-card .course-time {
+            font-size: 0.6rem;
+            margin-left: 4px;
         }
 
         .course-title { font-weight: bold; font-size: 0.75rem; }
@@ -274,7 +289,7 @@
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：班會">
+                <input type="text" id="courseTitleInput" placeholder="例如：10分鐘晨會">
             </div>
             <div class="form-group">
                 <label>星期 (橫向跨度)</label>
@@ -300,11 +315,10 @@
             </div>
             <div class="form-group">
                 <label>結束時間 (精確到分)</label>
-                <input type="time" id="endTimeInput" min="06:00" max="21:00" value="09:00">
+                <input type="time" id="endTimeInput" min="06:00" max="21:00" value="08:10">
             </div>
             <div class="form-group">
                 <label>卡片底色 (低飽和柔和色系)</label>
-                <!-- 多樣化低飽和度建議顏色快選區 -->
                 <div class="color-presets">
                     <button class="color-preset-btn" style="background:#6b8eac" title="柔藍" onclick="selectColor('#6b8eac')"></button>
                     <button class="color-preset-btn" style="background:#7ca982" title="鼠尾草綠" onclick="selectColor('#7ca982')"></button>
@@ -335,7 +349,9 @@
         const gridBody = document.getElementById('gridBody');
         const courseLayer = document.getElementById('courseLayer');
         const modalOverlay = document.getElementById('modalOverlay');
-        const HOUR_HEIGHT = 60;
+        
+        // 將 1 小時的高度提升至 120px (10分鐘 = 20px 高度，非常足夠顯示文字)
+        const HOUR_HEIGHT = 120;
 
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
@@ -402,7 +418,6 @@
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 const bgColor = c.color || DEFAULT_COLOR;
-                // 完全採用使用者設定或保存的顏色，不強行覆蓋
                 const finalTextColor = c.textColor || DEFAULT_TEXT_COLOR;
 
                 card.style.backgroundColor = bgColor;
@@ -416,6 +431,8 @@
                 const top = ((startMin - baseMin) / 60) * HOUR_HEIGHT;
                 const durationMinutes = endMin - startMin;
                 let calculatedHeight = (durationMinutes / 60) * HOUR_HEIGHT;
+                
+                // 保障 10 分鐘卡片的高度至少有 18px
                 const finalHeight = Math.max(calculatedHeight, 18);
 
                 const leftPercent = (c.startDay / 7) * 100;
@@ -426,7 +443,8 @@
                 card.style.left = `calc(${leftPercent}% + 1px)`;
                 card.style.width = `calc(${widthPercent}% - 2px)`;
 
-                if (durationMinutes < 25) {
+                // 20 分鐘以內的短課程，採用單列橫向佈局呈現
+                if (durationMinutes <= 20) {
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
