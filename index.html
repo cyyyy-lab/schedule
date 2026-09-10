@@ -130,7 +130,7 @@
         .course-time { font-weight: bold; opacity: 0.95; white-space: nowrap; }
         .course-duration { opacity: 0.85; white-space: nowrap; }
 
-        /* --- 1. 小於 10 分鐘：併排微型字體 --- */
+        /* --- 1. 小於 10 分鐘：微型尺寸併排顯示 (0.62rem) --- */
         .course-card.tiny-card {
             flex-direction: row; justify-content: center; align-items: center; gap: 3px; padding: 0 2px;
         }
@@ -138,7 +138,7 @@
         .course-card.tiny-card .course-time,
         .course-card.tiny-card .course-duration { font-size: 0.62rem; white-space: nowrap; }
 
-        /* --- 2. 10 分鐘 ~ 19 分鐘：併排，適度加大 --- */
+        /* --- 2. 10 分鐘 ~ 19 分鐘：適度加大字體併排顯示 (0.75rem) --- */
         .course-card.short-card {
             flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
         }
@@ -146,12 +146,20 @@
         .course-card.short-card .course-time,
         .course-card.short-card .course-duration { font-size: 0.75rem; white-space: nowrap; }
 
-        /* --- 3. 20 分鐘 ~ 59 分鐘：垂直排列，適度加大 --- */
+        /* --- 3. 20 分鐘：併排顯示 --- */
+        .course-card.twenty-min-card {
+            flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
+        }
+        .course-card.twenty-min-card .course-title { font-size: 0.8rem; white-space: nowrap; }
+        .course-card.twenty-min-card .course-time { font-size: 0.75rem; white-space: nowrap; }
+        .course-card.twenty-min-card .course-duration { font-size: 0.7rem; white-space: nowrap; }
+
+        /* --- 4. 21 分鐘 ~ 59 分鐘：垂直排列，適度加大字體 --- */
         .course-card.medium-card .course-title { font-size: 0.85rem; margin-bottom: 2px; }
         .course-card.medium-card .course-time { font-size: 0.78rem; }
         .course-card.medium-card .course-duration { font-size: 0.7rem; }
 
-        /* --- 4. 大於或等於 1 小時 (≥ 60 分鐘)：垂直排列，再進一步加大 --- */
+        /* --- 5. 大於或等於 1 小時 (≥ 60 分鐘)：垂直排列，再進一步放大字體 --- */
         .course-card.xlarge-card .course-title { font-size: 1.0rem; margin-bottom: 3px; }
         .course-card.xlarge-card .course-time { font-size: 0.88rem; }
         .course-card.xlarge-card .course-duration { font-size: 0.8rem; }
@@ -388,7 +396,7 @@
 
                 // 判斷時長並套用對應級距
                 if (durationMinutes < 10) {
-                    // 小於 10 分鐘：併排微型字體
+                    // 小於 10 分鐘：微型尺寸併排顯示 (0.62rem)
                     card.classList.add('tiny-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -396,15 +404,23 @@
                         <div class="course-duration">(${durationText})</div>
                     `;
                 } else if (durationMinutes <= 19) {
-                    // 10 ~ 19 分鐘：併排，適度加大字體
+                    // 10 ~ 19 分鐘：適度加大字體併排顯示 (0.75rem)
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
                         <div class="course-duration">(${durationText})</div>
                     `;
+                } else if (durationMinutes === 20) {
+                    // 20 分鐘：併排顯示
+                    card.classList.add('twenty-min-card');
+                    card.innerHTML = `
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-time">${c.startTime}-${c.endTime}</div>
+                        <div class="course-duration">(${durationText})</div>
+                    `;
                 } else if (durationMinutes >= 60) {
-                    // ≥ 1 小時 (≥ 60分鐘)：進一步放大字體，分行顯示
+                    // ≥ 1 小時 (≥ 60分鐘)：垂直排列，再進一步放大字體
                     card.classList.add('xlarge-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -412,7 +428,7 @@
                         <div class="course-duration">${durationText}</div>
                     `;
                 } else {
-                    // 20 ~ 59 分鐘：適度加大字體，分行顯示
+                    // 21 ~ 59 分鐘：垂直排列，適度加大字體
                     card.classList.add('medium-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
