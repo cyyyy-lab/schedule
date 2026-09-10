@@ -61,12 +61,35 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 10px; transition: background-color 0.3s, color 0.3s; }
         
-        .header-title { text-align: center; margin-bottom: 10px; }
-        h1 { font-size: 1.2rem; color: var(--text-color); display: inline-block; vertical-align: middle; }
+        /* 標題與分頁頁籤 */
+        .header-title { text-align: center; margin-bottom: 8px; }
+        .title-wrapper { display: inline-flex; align-items: center; gap: 6px; }
+        h1 { font-size: 1.2rem; color: var(--text-color); vertical-align: middle; }
         
+        .edit-title-btn {
+            background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--subtext-color);
+            transition: transform 0.1s, color 0.2s; padding: 2px 4px;
+        }
+        .edit-title-btn:hover { color: var(--primary-color); transform: scale(1.15); }
+
         .clear-btn {
             background: #ff4d4f; color: white; border: none; padding: 4px 8px;
             border-radius: 4px; font-size: 0.75rem; margin-left: 10px; cursor: pointer; vertical-align: middle;
+        }
+
+        .tab-container {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 5px 16px; border: 1px solid var(--border-color); background: var(--card-bg);
+            color: var(--text-color); border-radius: 16px; font-size: 0.8rem; font-weight: bold;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn:hover { opacity: 0.85; }
+        .tab-btn.active {
+            background: var(--primary-color); color: white; border-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
         .theme-switcher {
@@ -82,7 +105,7 @@
         .theme-btn.active { border-color: var(--primary-color); background-color: var(--primary-color); color: white; }
 
         .schedule-container {
-            width: 100%; max-height: calc(100vh - 120px); overflow-y: auto; overflow-x: auto;
+            width: 100%; max-height: calc(100vh - 160px); overflow-y: auto; overflow-x: auto;
             background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             -webkit-overflow-scrolling: touch;
         }
@@ -199,8 +222,17 @@
 <body>
 
     <div class="header-title">
-        <h1>我的週表</h1>
-        <button class="clear-btn" onclick="clearAllData()">清空課表</button>
+        <div class="title-wrapper">
+            <h1 id="scheduleTitle">週表 1</h1>
+            <button class="edit-title-btn" onclick="editScheduleTitle()" title="修改標題">✏️</button>
+        </div>
+        <button class="clear-btn" onclick="clearAllData()">清空此頁</button>
+    </div>
+
+    <!-- 分頁切換頁籤 -->
+    <div class="tab-container">
+        <button class="tab-btn active" id="tab-1" onclick="switchTab(1)">週表 1</button>
+        <button class="tab-btn" id="tab-2" onclick="switchTab(2)">週表 2</button>
     </div>
 
     <div class="theme-switcher">
@@ -232,6 +264,7 @@
 
     <p class="tip">💡 點擊空白格新增；點擊課程卡片可修改時間、複製或刪除</p>
 
+    <!-- 課程編輯 Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h3 id="modalTitle">新增課程</h3>
@@ -297,12 +330,27 @@
         const gridBody = document.getElementById('gridBody');
         const courseLayer = document.getElementById('courseLayer');
         const modalOverlay = document.getElementById('modalOverlay');
+        const scheduleTitleEl = document.getElementById('scheduleTitle');
         
         const HOUR_HEIGHT = 120;
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
 
-        let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
+        let currentTab = 1;
+        let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v1')) || {
+            1: { title: '週表 1', courses: [] },
+            2: { title: '週表 2', courses: [] }
+        };
+
+        // 舊資料相容遷移
+        const oldData = localStorage.getItem('my_schedule_data_v2');
+        if (oldData && (!schedulesData[1].courses || schedulesData[1].courses.length === 0)) {
+            try {
+                schedulesData[1].courses = JSON.parse(oldData);
+                localStorage.removeItem('my_schedule_data_v2');
+            } catch(e) {}
+        }
+
         let currentEditId = null;
 
         function setTheme(theme) {
@@ -330,6 +378,7 @@
         const savedTheme = localStorage.getItem('my_schedule_theme') || 'white';
         setTheme(savedTheme);
 
+        // 初始化時間網格
         for (let hour = 6; hour <= 20; hour++) {
             const timeCell = document.createElement('div');
             timeCell.className = 'grid-cell time-cell';
@@ -344,6 +393,31 @@
                 emptyCell.onclick = () => openAddModal(day, `${startH}:00`, `${endH}:00`);
                 gridBody.appendChild(emptyCell);
             }
+        }
+
+        function switchTab(tabIndex) {
+            currentTab = tabIndex;
+            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx + 1 === tabIndex);
+            });
+            updateHeaderAndCourses();
+        }
+
+        function editScheduleTitle() {
+            const currentTitle = schedulesData[currentTab].title || `週表 ${currentTab}`;
+            const newTitle = prompt('請輸入新的週表標題：', currentTitle);
+            if (newTitle !== null && newTitle.trim() !== '') {
+                schedulesData[currentTab].title = newTitle.trim();
+                saveAllData();
+                updateHeaderAndCourses();
+            }
+        }
+
+        function updateHeaderAndCourses() {
+            const tabData = schedulesData[currentTab] || { title: `週表 ${currentTab}`, courses: [] };
+            scheduleTitleEl.textContent = tabData.title;
+            document.getElementById(`tab-${currentTab}`).textContent = tabData.title;
+            renderCourses();
         }
 
         function timeToMinutes(timeStr) {
@@ -366,8 +440,9 @@
 
         function renderCourses() {
             courseLayer.innerHTML = '';
+            const activeCourses = schedulesData[currentTab].courses || [];
 
-            courses.forEach(c => {
+            activeCourses.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.style.backgroundColor = c.color || DEFAULT_COLOR;
@@ -394,9 +469,8 @@
 
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime} (${durationText})`;
 
-                // 判斷時長並套用對應級距
+                // 判斷時長套用對應級距
                 if (durationMinutes < 10) {
-                    // 小於 10 分鐘：微型尺寸併排顯示 (0.62rem)
                     card.classList.add('tiny-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -404,7 +478,6 @@
                         <div class="course-duration">(${durationText})</div>
                     `;
                 } else if (durationMinutes <= 19) {
-                    // 10 ~ 19 分鐘：適度加大字體併排顯示 (0.75rem)
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -412,7 +485,6 @@
                         <div class="course-duration">(${durationText})</div>
                     `;
                 } else if (durationMinutes === 20) {
-                    // 20 分鐘：併排顯示
                     card.classList.add('twenty-min-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -420,7 +492,6 @@
                         <div class="course-duration">(${durationText})</div>
                     `;
                 } else if (durationMinutes >= 60) {
-                    // ≥ 1 小時 (≥ 60分鐘)：垂直排列，再進一步放大字體
                     card.classList.add('xlarge-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -428,7 +499,6 @@
                         <div class="course-duration">${durationText}</div>
                     `;
                 } else {
-                    // 21 ~ 59 分鐘：垂直排列，適度加大字體
                     card.classList.add('medium-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
@@ -462,7 +532,7 @@
         }
 
         function openEditModal(id) {
-            const course = courses.find(c => c.id === id);
+            const course = schedulesData[currentTab].courses.find(c => c.id === id);
             if (!course) return;
 
             currentEditId = id;
@@ -509,19 +579,21 @@
                 textColor: document.getElementById('courseTextColorInput').value
             };
 
+            let activeCourses = schedulesData[currentTab].courses;
             if (currentEditId) {
-                courses = courses.map(c => c.id === currentEditId ? courseData : c);
+                schedulesData[currentTab].courses = activeCourses.map(c => c.id === currentEditId ? courseData : c);
             } else {
-                courses.push(courseData);
+                schedulesData[currentTab].courses.push(courseData);
             }
 
-            saveAndRender();
+            saveAllData();
+            renderCourses();
             closeModal();
         }
 
         function copyCourse() {
             if (!currentEditId) return;
-            const originalCourse = courses.find(c => c.id === currentEditId);
+            const originalCourse = schedulesData[currentTab].courses.find(c => c.id === currentEditId);
             if (!originalCourse) return;
 
             currentEditId = null;
@@ -538,25 +610,26 @@
 
         function deleteCourse() {
             if (currentEditId && confirm('確定要刪除這個課程嗎？')) {
-                courses = courses.filter(c => c.id !== currentEditId);
-                saveAndRender();
+                schedulesData[currentTab].courses = schedulesData[currentTab].courses.filter(c => c.id !== currentEditId);
+                saveAllData();
+                renderCourses();
                 closeModal();
             }
         }
 
         function clearAllData() {
-            if (confirm('確定要清空所有課表資料嗎？')) {
-                courses = [];
-                saveAndRender();
+            if (confirm(`確定要清空「${schedulesData[currentTab].title}」的課程資料嗎？`)) {
+                schedulesData[currentTab].courses = [];
+                saveAllData();
+                renderCourses();
             }
         }
 
-        function saveAndRender() {
-            localStorage.setItem('my_schedule_data_v2', JSON.stringify(courses));
-            renderCourses();
+        function saveAllData() {
+            localStorage.setItem('my_schedules_multitab_v1', JSON.stringify(schedulesData));
         }
 
-        renderCourses();
+        updateHeaderAndCourses();
     </script>
 </body>
 </html>
