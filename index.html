@@ -41,15 +41,15 @@
             --hover-bg: #2c2c2c;
         }
 
-        /* 冷色主題 (藍灰沉穩風格) */
+        /* 冷色主題 (淺色冷藍灰風格) */
         body.theme-cool {
-            --bg-color: #1e222b;
-            --card-bg: #282c37;
-            --text-color: #e6edf3;
-            --subtext-color: #9da7b3;
-            --border-color: #3b4252;
-            --header-bg: #21252f;
-            --hover-bg: #323846;
+            --bg-color: #eef3f8;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --subtext-color: #607d8b;
+            --border-color: #d0dce5;
+            --header-bg: #e1e9f0;
+            --hover-bg: #dbe7f3;
         }
 
         /* 暖色主題 (奶茶米色溫馨風格) */
@@ -166,13 +166,13 @@
         .course-card {
             position: absolute;
             pointer-events: auto;
-            border-radius: 4px; color: #ffffff; padding: 2px 4px;
+            border-radius: 4px; padding: 2px 4px;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer;
             box-sizing: border-box; line-height: 1.1;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
         }
 
         .course-card.short-card {
@@ -239,8 +239,8 @@
     <div class="theme-switcher">
         <span>背景主題：</span>
         <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
+        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">淺冷色</button>
         <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')">暖色</button>
-        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">冷色</button>
         <button class="theme-btn" id="btn-gray" onclick="setTheme('gray')">灰色</button>
         <button class="theme-btn" id="btn-black" onclick="setTheme('black')">黑色</button>
     </div>
@@ -303,20 +303,20 @@
                 <input type="time" id="endTimeInput" min="06:00" max="21:00" value="09:00">
             </div>
             <div class="form-group">
-                <label>卡片顏色 (低飽和莫蘭迪色調)</label>
-                <!-- 低飽和度建議顏色快選區 (共 9 個) -->
+                <label>卡片顏色 (低飽和柔和色系)</label>
+                <!-- 多樣化低飽和度建議顏色快選區 -->
                 <div class="color-presets">
-                    <button class="color-preset-btn" style="background:#5b7c99" title="霧藍" onclick="selectColor('#5b7c99')"></button>
-                    <button class="color-preset-btn" style="background:#708065" title="苔綠" onclick="selectColor('#708065')"></button>
-                    <button class="color-preset-btn" style="background:#996b6b" title="煙燻粉" onclick="selectColor('#996b6b')"></button>
-                    <button class="color-preset-btn" style="background:#8c759e" title="灰紫" onclick="selectColor('#8c759e')"></button>
-                    <button class="color-preset-btn" style="background:#9e8368" title="燕麥棕" onclick="selectColor('#9e8368')"></button>
-                    <button class="color-preset-btn" style="background:#5e8c8c" title="鼠尾草綠" onclick="selectColor('#5e8c8c')"></button>
-                    <button class="color-preset-btn" style="background:#9e8a5b" title="莫蘭迪黃" onclick="selectColor('#9e8a5b')"></button>
-                    <button class="color-preset-btn" style="background:#9e6b5b" title="土陶紅" onclick="selectColor('#9e6b5b')"></button>
-                    <button class="color-preset-btn" style="background:#5c5c5c" title="深灰" onclick="selectColor('#5c5c5c')"></button>
+                    <button class="color-preset-btn" style="background:#6b8eac" title="柔藍" onclick="selectColor('#6b8eac')"></button>
+                    <button class="color-preset-btn" style="background:#7ca982" title="鼠尾草綠" onclick="selectColor('#7ca982')"></button>
+                    <button class="color-preset-btn" style="background:#d4a373" title="燕麥奶" onclick="selectColor('#d4a373')"></button>
+                    <button class="color-preset-btn" style="background:#e07a5f" title="柔橙紅" onclick="selectColor('#e07a5f')"></button>
+                    <button class="color-preset-btn" style="background:#cb99c9" title="淺丁香紫" onclick="selectColor('#cb99c9')"></button>
+                    <button class="color-preset-btn" style="background:#e9c46a" title="芥末暖黃" onclick="selectColor('#e9c46a')"></button>
+                    <button class="color-preset-btn" style="background:#81b29a" title="薄荷青綠" onclick="selectColor('#81b29a')"></button>
+                    <button class="color-preset-btn" style="background:#a3b18a" title="橄欖茶綠" onclick="selectColor('#a3b18a')"></button>
+                    <button class="color-preset-btn" style="background:#8d99ae" title="石墨霧灰" onclick="selectColor('#8d99ae')"></button>
                 </div>
-                <input type="color" id="courseColorInput" value="#5b7c99">
+                <input type="color" id="courseColorInput" value="#6b8eac">
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">取消</button>
@@ -333,8 +333,7 @@
         const modalOverlay = document.getElementById('modalOverlay');
         const HOUR_HEIGHT = 60;
 
-        // 預設低飽和莫蘭迪藍
-        const DEFAULT_COLOR = '#5b7c99';
+        const DEFAULT_COLOR = '#6b8eac';
 
         let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
         let currentEditId = null;
@@ -391,13 +390,55 @@
             document.getElementById('courseColorInput').value = hex;
         }
 
+        // --- W3C 相對亮度與對比度計算演算法 ---
+        function getLuminance(hexColor) {
+            let hex = hexColor.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            const r = parseInt(hex.substring(0, 2), 16) / 255;
+            const g = parseInt(hex.substring(2, 4), 16) / 255;
+            const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+            const a = [r, g, b].map(v => {
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+
+        function getContrastRatio(hex1, hex2) {
+            const lum1 = getLuminance(hex1);
+            const lum2 = getLuminance(hex2);
+            const brightest = Math.max(lum1, lum2);
+            const darkest = Math.min(lum1, lum2);
+            return (brightest + 0.05) / (darkest + 0.05);
+        }
+
+        // 判斷並切換適合的文字顏色 (確保對比度高於 55% / 4.5:1)
+        function getOptimalTextColor(bgHex) {
+            const whiteHex = '#ffffff';
+            const darkHex = '#1f2937';
+
+            const whiteContrast = getContrastRatio(bgHex, whiteHex);
+            const darkContrast = getContrastRatio(bgHex, darkHex);
+
+            if (whiteContrast < 4.5 && darkContrast > whiteContrast) {
+                return darkHex;
+            }
+            return whiteHex;
+        }
+
         function renderCourses() {
             courseLayer.innerHTML = '';
 
             courses.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'course-card';
-                card.style.backgroundColor = c.color || DEFAULT_COLOR;
+                const bgColor = c.color || DEFAULT_COLOR;
+                const textColor = getOptimalTextColor(bgColor);
+
+                card.style.backgroundColor = bgColor;
+                card.style.color = textColor;
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime}`;
 
                 const startMin = timeToMinutes(c.startTime);
