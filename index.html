@@ -319,7 +319,7 @@
                 <input type="color" id="courseColorInput" value="#6b8eac">
             </div>
             <div class="form-group">
-                <label>自訂文字顏色</label>
+                <label>自訂文字顏色 (預設為白色)</label>
                 <input type="color" id="courseTextColorInput" value="#ffffff">
             </div>
             <div class="modal-actions">
@@ -338,6 +338,7 @@
         const HOUR_HEIGHT = 60;
 
         const DEFAULT_COLOR = '#6b8eac';
+        const DEFAULT_TEXT_COLOR = '#ffffff';
 
         let courses = JSON.parse(localStorage.getItem('my_schedule_data_v2')) || [];
         let currentEditId = null;
@@ -392,61 +393,6 @@
 
         function selectColor(hex) {
             document.getElementById('courseColorInput').value = hex;
-            document.getElementById('courseTextColorInput').value = getOptimalTextColor(hex);
-        }
-
-        // --- W3C 相對亮度與對比度計算演算法 ---
-        function getLuminance(hexColor) {
-            let hex = hexColor.replace('#', '');
-            if (hex.length === 3) {
-                hex = hex.split('').map(c => c + c).join('');
-            }
-            const r = parseInt(hex.substring(0, 2), 16) / 255;
-            const g = parseInt(hex.substring(2, 4), 16) / 255;
-            const b = parseInt(hex.substring(4, 6), 16) / 255;
-
-            const a = [r, g, b].map(v => {
-                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-            });
-            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-        }
-
-        function getContrastRatio(hex1, hex2) {
-            const lum1 = getLuminance(hex1);
-            const lum2 = getLuminance(hex2);
-            const brightest = Math.max(lum1, lum2);
-            const darkest = Math.min(lum1, lum2);
-            return (brightest + 0.05) / (darkest + 0.05);
-        }
-
-        function getOptimalTextColor(bgHex) {
-            const whiteHex = '#ffffff';
-            const darkHex = '#1f2937';
-
-            const whiteContrast = getContrastRatio(bgHex, whiteHex);
-            const darkContrast = getContrastRatio(bgHex, darkHex);
-
-            if (whiteContrast < 4.5 && darkContrast > whiteContrast) {
-                return darkHex;
-            }
-            return whiteHex;
-        }
-
-        // 計算對比度百分比 (W3C 對比度介於 1~21, 換算成 0%~100%)
-        function getContrastPercentage(bgHex, textHex) {
-            const ratio = getContrastRatio(bgHex, textHex);
-            return ((ratio - 1) / 20) * 100;
-        }
-
-        // 檢查與修正文字顏色：低於 40% 時自動轉為對比度 > 40% 的高顯著顏色
-        function ensureSafeTextColor(bgHex, textHex) {
-            if (!textHex) return getOptimalTextColor(bgHex);
-            
-            const contrastPct = getContrastPercentage(bgHex, textHex);
-            if (contrastPct < 40) {
-                return getOptimalTextColor(bgHex);
-            }
-            return textHex;
         }
 
         function renderCourses() {
@@ -456,12 +402,11 @@
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 const bgColor = c.color || DEFAULT_COLOR;
-
-                // 檢查設定的文字顏色，對比度低於 40% 時自動調整為高對比顏色
-                const safeTextColor = ensureSafeTextColor(bgColor, c.textColor);
+                // 完全採用使用者設定或保存的顏色，不強行覆蓋
+                const finalTextColor = c.textColor || DEFAULT_TEXT_COLOR;
 
                 card.style.backgroundColor = bgColor;
-                card.style.color = safeTextColor;
+                card.style.color = finalTextColor;
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime}`;
 
                 const startMin = timeToMinutes(c.startTime);
@@ -512,7 +457,7 @@
             document.getElementById('startTimeInput').value = startTime;
             document.getElementById('endTimeInput').value = endTime;
             document.getElementById('courseColorInput').value = DEFAULT_COLOR;
-            document.getElementById('courseTextColorInput').value = getOptimalTextColor(DEFAULT_COLOR);
+            document.getElementById('courseTextColorInput').value = DEFAULT_TEXT_COLOR;
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('copyBtn').style.display = 'none';
             modalOverlay.style.display = 'flex';
@@ -530,7 +475,7 @@
             document.getElementById('startTimeInput').value = course.startTime;
             document.getElementById('endTimeInput').value = course.endTime;
             document.getElementById('courseColorInput').value = course.color || DEFAULT_COLOR;
-            document.getElementById('courseTextColorInput').value = course.textColor || getOptimalTextColor(course.color || DEFAULT_COLOR);
+            document.getElementById('courseTextColorInput').value = course.textColor || DEFAULT_TEXT_COLOR;
             document.getElementById('deleteBtn').style.display = 'inline-block';
             document.getElementById('copyBtn').style.display = 'inline-block';
             modalOverlay.style.display = 'flex';
