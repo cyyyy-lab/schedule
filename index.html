@@ -414,15 +414,16 @@
             return (brightest + 0.05) / (darkest + 0.05);
         }
 
-        // 判斷並切換適合的文字顏色 (確保對比度高於 55% / 4.5:1)
+        // 判斷並切換適合的文字顏色 (確保對比度高於 70% / 7.0:1 高對比度標準)
         function getOptimalTextColor(bgHex) {
             const whiteHex = '#ffffff';
-            const darkHex = '#1f2937';
+            const darkHex = '#0d1117'; // 高清晰特深色
 
             const whiteContrast = getContrastRatio(bgHex, whiteHex);
             const darkContrast = getContrastRatio(bgHex, darkHex);
 
-            if (whiteContrast < 4.5 && darkContrast > whiteContrast) {
+            // 當白色對比度小於 7.0 (相當於低於 70% 的對比度)，且深色對比度更高時，自動切換至與底色對比度 > 70% 的深色
+            if (whiteContrast < 7.0 && darkContrast > whiteContrast) {
                 return darkHex;
             }
             return whiteHex;
