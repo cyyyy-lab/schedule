@@ -303,7 +303,7 @@
                 <input type="time" id="endTimeInput" min="06:00" max="21:00" value="09:00">
             </div>
             <div class="form-group">
-                <label>卡片顏色 (低飽和柔和色系)</label>
+                <label>卡片底色 (低飽和柔和色系)</label>
                 <!-- 多樣化低飽和度建議顏色快選區 -->
                 <div class="color-presets">
                     <button class="color-preset-btn" style="background:#6b8eac" title="柔藍" onclick="selectColor('#6b8eac')"></button>
@@ -317,6 +317,10 @@
                     <button class="color-preset-btn" style="background:#8d99ae" title="石墨霧灰" onclick="selectColor('#8d99ae')"></button>
                 </div>
                 <input type="color" id="courseColorInput" value="#6b8eac">
+            </div>
+            <div class="form-group">
+                <label>自訂文字顏色</label>
+                <input type="color" id="courseTextColorInput" value="#ffffff">
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">取消</button>
@@ -388,6 +392,8 @@
 
         function selectColor(hex) {
             document.getElementById('courseColorInput').value = hex;
+            // 當選取預設低飽和底色時，自動同步計算建議的文字顏色
+            document.getElementById('courseTextColorInput').value = getOptimalTextColor(hex);
         }
 
         // --- W3C 相對亮度與對比度計算演算法 ---
@@ -414,18 +420,14 @@
             return (brightest + 0.05) / (darkest + 0.05);
         }
 
-        // 判斷並切換適合的文字顏色 (對比度標準升級至 75%，即 Ratio ≥ 15.75)
         function getOptimalTextColor(bgHex) {
             const whiteHex = '#ffffff';
-            const darkHex = '#000000'; // 使用純黑確保最高可能對比度
+            const darkHex = '#1f2937';
 
             const whiteContrast = getContrastRatio(bgHex, whiteHex);
             const darkContrast = getContrastRatio(bgHex, darkHex);
 
-            // W3C 最高對比度為 21:1，75% 的對比度即為 21 * 0.75 = 15.75
-            const TARGET_CONTRAST = 21 * 0.75; 
-
-            if (whiteContrast < TARGET_CONTRAST && darkContrast > whiteContrast) {
+            if (whiteContrast < 4.5 && darkContrast > whiteContrast) {
                 return darkHex;
             }
             return whiteHex;
@@ -438,7 +440,8 @@
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 const bgColor = c.color || DEFAULT_COLOR;
-                const textColor = getOptimalTextColor(bgColor);
+                // 優先使用使用者自訂的文字顏色，未設定時自動計算最佳文字顏色
+                const textColor = c.textColor || getOptimalTextColor(bgColor);
 
                 card.style.backgroundColor = bgColor;
                 card.style.color = textColor;
@@ -492,6 +495,7 @@
             document.getElementById('startTimeInput').value = startTime;
             document.getElementById('endTimeInput').value = endTime;
             document.getElementById('courseColorInput').value = DEFAULT_COLOR;
+            document.getElementById('courseTextColorInput').value = getOptimalTextColor(DEFAULT_COLOR);
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('copyBtn').style.display = 'none';
             modalOverlay.style.display = 'flex';
@@ -509,6 +513,7 @@
             document.getElementById('startTimeInput').value = course.startTime;
             document.getElementById('endTimeInput').value = course.endTime;
             document.getElementById('courseColorInput').value = course.color || DEFAULT_COLOR;
+            document.getElementById('courseTextColorInput').value = course.textColor || getOptimalTextColor(course.color || DEFAULT_COLOR);
             document.getElementById('deleteBtn').style.display = 'inline-block';
             document.getElementById('copyBtn').style.display = 'inline-block';
             modalOverlay.style.display = 'flex';
@@ -540,7 +545,8 @@
                 daySpan: parseInt(document.getElementById('daySpanSelect').value),
                 startTime: startTime,
                 endTime: endTime,
-                color: document.getElementById('courseColorInput').value
+                color: document.getElementById('courseColorInput').value,
+                textColor: document.getElementById('courseTextColorInput').value
             };
 
             if (currentEditId) {
