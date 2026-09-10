@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary-color: #4a90e2;
-            --grid-size: 120px; /* 每 1 小時的高度 */
+            --grid-size: 120px; /* 每 1 小時的高度為 120px */
             
             /* 預設白色主題變數 */
             --bg-color: #fafafa;
@@ -64,7 +64,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 10px; transition: background-color 0.3s, color 0.3s; text-align: center; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 10px; transition: background-color 0.3s, color 0.3s; }
         
         .header-title { text-align: center; margin-bottom: 10px; }
         h1 { font-size: 1.2rem; color: var(--text-color); display: inline-block; vertical-align: middle; }
@@ -133,8 +133,7 @@
 
         .header-cell {
             font-weight: bold; font-size: 0.85rem; height: 35px;
-            display: flex; align-items: center; justify-content: center;
-            text-align: center;
+            display: flex; align-items: center; justify-content: center; text-align: center;
             color: var(--text-color); border-right: 1px solid var(--border-color);
         }
 
@@ -155,9 +154,8 @@
 
         .time-cell {
             background-color: var(--header-bg); font-size: 0.75rem;
-            display: flex; align-items: flex-start; justify-content: center;
+            display: flex; align-items: flex-start; justify-content: center; text-align: center;
             padding-top: 4px;
-            text-align: center;
             position: sticky; left: 0; z-index: 2; color: var(--subtext-color); border-right: 2px solid var(--border-color);
         }
 
@@ -168,7 +166,6 @@
             pointer-events: none;
         }
 
-        /* 基礎課程卡片樣式 */
         .course-card {
             position: absolute;
             pointer-events: auto;
@@ -177,34 +174,15 @@
             justify-content: center; align-items: center; text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer;
-            box-sizing: border-box; line-height: 1.15;
+            box-sizing: border-box; line-height: 1.25;
             transition: transform 0.1s;
         }
 
         .course-title { font-weight: bold; font-size: 0.75rem; text-align: center; }
         .course-time { font-size: 0.65rem; opacity: 0.95; white-space: nowrap; text-align: center; }
+        .course-duration { font-size: 0.6rem; opacity: 0.85; white-space: nowrap; text-align: center; }
 
-        /* 1. 小於 30 分鐘：併排顯示，全部文字置中 */
-        .course-card.short-card {
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            padding: 0 4px;
-        }
-        .course-card.short-card .course-title {
-            font-size: 0.7rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 65%;
-        }
-        .course-card.short-card .course-time {
-            font-size: 0.6rem;
-            white-space: nowrap;
-        }
-
-        /* 2. 大於 1 小時 (> 60 分鐘)：字體放大 */
+        /* 大於 1 小時 (60分鐘) 的課程適當放大字體 */
         .course-card.large-card .course-title {
             font-size: 0.9rem;
             margin-bottom: 2px;
@@ -212,11 +190,34 @@
         .course-card.large-card .course-time {
             font-size: 0.75rem;
         }
+        .course-card.large-card .course-duration {
+            font-size: 0.7rem;
+        }
+
+        /* 小於 25 分鐘的課程：名字、時間和時長並排，完整顯示起訖時間 */
+        .course-card.short-card {
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            padding: 0 2px;
+        }
+        .course-card.short-card .course-title {
+            font-size: 0.7rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .course-card.short-card .course-time {
+            font-size: 0.62rem;
+        }
+        .course-card.short-card .course-duration {
+            font-size: 0.6rem;
+        }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 10; justify-content: center; align-items: center;
-            text-align: left;
         }
         .modal {
             background: white; color: #333; padding: 20px; border-radius: 8px; width: 90%; max-width: 360px;
@@ -229,7 +230,6 @@
             width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;
         }
 
-        /* 低飽和度顏色選擇區 */
         .color-presets {
             display: flex;
             gap: 6px;
@@ -249,7 +249,7 @@
         }
 
         .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; gap: 6px; flex-wrap: wrap; }
-        .btn { padding: 8px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1; white-space: nowrap; }
+        .btn { padding: 8px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1; white-space: nowrap; text-align: center; }
         .btn-primary { background: #4a90e2; color: white; }
         .btn-danger { background: #ff4d4f; color: white; }
         .btn-secondary { background: #ccc; color: #333; }
@@ -304,7 +304,7 @@
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：10分鐘晨會 / 2小時大課">
+                <input type="text" id="courseTitleInput" placeholder="例如：10分鐘晨會">
             </div>
             <div class="form-group">
                 <label>星期 (橫向跨度)</label>
@@ -421,6 +421,16 @@
             return h * 60 + m;
         }
 
+        // 計算並格式化時長顯示
+        function formatDuration(minutes) {
+            if (minutes < 60) {
+                return `${minutes} 分鐘`;
+            } else {
+                const hrs = minutes / 60;
+                return Number.isInteger(hrs) ? `${hrs} 小時` : `${hrs.toFixed(1)} 小時`;
+            }
+        }
+
         function selectColor(hex) {
             document.getElementById('courseColorInput').value = hex;
         }
@@ -436,7 +446,6 @@
 
                 card.style.backgroundColor = bgColor;
                 card.style.color = finalTextColor;
-                card.title = `${c.title}\n${c.startTime} - ${c.endTime}`;
 
                 const startMin = timeToMinutes(c.startTime);
                 const endMin = timeToMinutes(c.endTime);
@@ -444,9 +453,11 @@
 
                 const top = ((startMin - baseMin) / 60) * HOUR_HEIGHT;
                 const durationMinutes = endMin - startMin;
+                const durationText = formatDuration(durationMinutes);
+
+                card.title = `${c.title}\n時間：${c.startTime} - ${c.endTime}\n時長：${durationText}`;
+
                 let calculatedHeight = (durationMinutes / 60) * HOUR_HEIGHT;
-                
-                // 保障極短卡片的高度至少有 18px
                 const finalHeight = Math.max(calculatedHeight, 18);
 
                 const leftPercent = (c.startDay / 7) * 100;
@@ -457,26 +468,24 @@
                 card.style.left = `calc(${leftPercent}% + 1px)`;
                 card.style.width = `calc(${widthPercent}% - 2px)`;
 
-                // 判斷時間長短調整樣式
-                if (durationMinutes < 30) {
-                    // 1. 小於 30 分鐘：名稱與時間併排
+                // 判斷長度樣式
+                if (durationMinutes < 25) {
+                    // 小於 25 分鐘：名字、時間 (幾點到幾點) 和時長並排
                     card.classList.add('short-card');
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
-                        <div class="course-time">(${c.startTime})</div>
-                    `;
-                } else if (durationMinutes > 60) {
-                    // 2. 大於 1 小時 (> 60 分鐘)：文字適當放大
-                    card.classList.add('large-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime} - ${c.endTime}</div>
+                        <div class="course-time">${c.startTime}-${c.endTime}</div>
+                        <div class="course-duration">(${durationText})</div>
                     `;
                 } else {
-                    // 3. 介於 30 ~ 60 分鐘：標準大小
+                    if (durationMinutes > 60) {
+                        // 大於 1 小時 (60分鐘) 適當放大
+                        card.classList.add('large-card');
+                    }
                     card.innerHTML = `
                         <div class="course-title">${c.title}</div>
                         <div class="course-time">${c.startTime}-${c.endTime}</div>
+                        <div class="course-duration">時長: ${durationText}</div>
                     `;
                 }
 
