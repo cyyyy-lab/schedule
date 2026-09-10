@@ -392,7 +392,6 @@
 
         function selectColor(hex) {
             document.getElementById('courseColorInput').value = hex;
-            // 當選取預設低飽和底色時，自動同步計算建議的文字顏色
             document.getElementById('courseTextColorInput').value = getOptimalTextColor(hex);
         }
 
@@ -433,6 +432,23 @@
             return whiteHex;
         }
 
+        // 計算對比度百分比 (W3C 對比度介於 1~21, 換算成 0%~100%)
+        function getContrastPercentage(bgHex, textHex) {
+            const ratio = getContrastRatio(bgHex, textHex);
+            return ((ratio - 1) / 20) * 100;
+        }
+
+        // 檢查與修正文字顏色：低於 40% 時自動轉為對比度 > 40% 的高顯著顏色
+        function ensureSafeTextColor(bgHex, textHex) {
+            if (!textHex) return getOptimalTextColor(bgHex);
+            
+            const contrastPct = getContrastPercentage(bgHex, textHex);
+            if (contrastPct < 40) {
+                return getOptimalTextColor(bgHex);
+            }
+            return textHex;
+        }
+
         function renderCourses() {
             courseLayer.innerHTML = '';
 
@@ -440,11 +456,12 @@
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 const bgColor = c.color || DEFAULT_COLOR;
-                // 優先使用使用者自訂的文字顏色，未設定時自動計算最佳文字顏色
-                const textColor = c.textColor || getOptimalTextColor(bgColor);
+
+                // 檢查設定的文字顏色，對比度低於 40% 時自動調整為高對比顏色
+                const safeTextColor = ensureSafeTextColor(bgColor, c.textColor);
 
                 card.style.backgroundColor = bgColor;
-                card.style.color = textColor;
+                card.style.color = safeTextColor;
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime}`;
 
                 const startMin = timeToMinutes(c.startTime);
