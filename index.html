@@ -414,17 +414,17 @@
             return (brightest + 0.05) / (darkest + 0.05);
         }
 
-        // 判斷並切換適合的文字顏色 (當對比度低於 50% / 即對比比例 < 5:1 時自動切換)
+        // 判斷並切換適合的文字顏色 (確保對比度高於 60% / 約對應 7:1 WCAG AAA 標準)
         function getOptimalTextColor(bgHex) {
             const whiteHex = '#ffffff';
-            const darkHex = '#1f2937';
+            const darkHex = '#111827';
 
             const whiteContrast = getContrastRatio(bgHex, whiteHex);
             const darkContrast = getContrastRatio(bgHex, darkHex);
 
-            // 門檻 50% 對比度設為 5.0 (高於 4.5)
-            // 當白色對比度小於 5.0，且深色對比度高於白色時，切換為深色文字
-            if (whiteContrast < 5.0 && darkContrast > whiteContrast) {
+            // 7.0 / 21 = 0.333...，即在對比度比例中達到 60% (對比度 >= 7:1)
+            // 當白色文字對比度小於 7.0 (60%) 時，自動切換為深色文字以維持對比度大於 60%
+            if (whiteContrast < 7.0 && darkContrast > whiteContrast) {
                 return darkHex;
             }
             return whiteHex;
