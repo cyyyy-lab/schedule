@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人週表課表</title>
+    <title>我的週表</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -41,6 +41,28 @@
             --hover-bg: #2c2c2c;
         }
 
+        /* 冷色主題 (藍灰沉穩風格) */
+        body.theme-cool {
+            --bg-color: #1e222b;
+            --card-bg: #282c37;
+            --text-color: #e6edf3;
+            --subtext-color: #9da7b3;
+            --border-color: #3b4252;
+            --header-bg: #21252f;
+            --hover-bg: #323846;
+        }
+
+        /* 暖色主題 (奶茶米色溫馨風格) */
+        body.theme-warm {
+            --bg-color: #f5f0eb;
+            --card-bg: #fdfbf7;
+            --text-color: #4a3e3d;
+            --subtext-color: #8c7b79;
+            --border-color: #e6ded8;
+            --header-bg: #ede5dd;
+            --hover-bg: #f5eae1;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 10px; transition: background-color 0.3s, color 0.3s; }
         
@@ -57,10 +79,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 12px;
             font-size: 0.8rem;
             color: var(--subtext-color);
+            flex-wrap: wrap;
         }
 
         .theme-btn {
@@ -176,7 +199,7 @@
             width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;
         }
 
-        /* 建議低飽和度顏色色塊區 */
+        /* 低飽和度顏色選擇區 */
         .color-presets {
             display: flex;
             gap: 6px;
@@ -208,7 +231,7 @@
 <body>
 
     <div class="header-title">
-        <h1>我的週表課表</h1>
+        <h1>我的週表</h1>
         <button class="clear-btn" onclick="clearAllData()">清空課表</button>
     </div>
 
@@ -216,6 +239,8 @@
     <div class="theme-switcher">
         <span>背景主題：</span>
         <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
+        <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')">暖色</button>
+        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">冷色</button>
         <button class="theme-btn" id="btn-gray" onclick="setTheme('gray')">灰色</button>
         <button class="theme-btn" id="btn-black" onclick="setTheme('black')">黑色</button>
     </div>
@@ -279,15 +304,17 @@
             </div>
             <div class="form-group">
                 <label>卡片顏色 (低飽和莫蘭迪色調)</label>
-                <!-- 低飽和度建議顏色快選區 -->
+                <!-- 低飽和度建議顏色快選區 (共 9 個) -->
                 <div class="color-presets">
-                    <button class="color-preset-btn" style="background:#5b7c99" onclick="selectColor('#5b7c99')"></button>
-                    <button class="color-preset-btn" style="background:#708065" onclick="selectColor('#708065')"></button>
-                    <button class="color-preset-btn" style="background:#996b6b" onclick="selectColor('#996b6b')"></button>
-                    <button class="color-preset-btn" style="background:#8c759e" onclick="selectColor('#8c759e')"></button>
-                    <button class="color-preset-btn" style="background:#9e8368" onclick="selectColor('#9e8368')"></button>
-                    <button class="color-preset-btn" style="background:#5e8c8c" onclick="selectColor('#5e8c8c')"></button>
-                    <button class="color-preset-btn" style="background:#5c5c5c" onclick="selectColor('#5c5c5c')"></button>
+                    <button class="color-preset-btn" style="background:#5b7c99" title="霧藍" onclick="selectColor('#5b7c99')"></button>
+                    <button class="color-preset-btn" style="background:#708065" title="苔綠" onclick="selectColor('#708065')"></button>
+                    <button class="color-preset-btn" style="background:#996b6b" title="煙燻粉" onclick="selectColor('#996b6b')"></button>
+                    <button class="color-preset-btn" style="background:#8c759e" title="灰紫" onclick="selectColor('#8c759e')"></button>
+                    <button class="color-preset-btn" style="background:#9e8368" title="燕麥棕" onclick="selectColor('#9e8368')"></button>
+                    <button class="color-preset-btn" style="background:#5e8c8c" title="鼠尾草綠" onclick="selectColor('#5e8c8c')"></button>
+                    <button class="color-preset-btn" style="background:#9e8a5b" title="莫蘭迪黃" onclick="selectColor('#9e8a5b')"></button>
+                    <button class="color-preset-btn" style="background:#9e6b5b" title="土陶紅" onclick="selectColor('#9e6b5b')"></button>
+                    <button class="color-preset-btn" style="background:#5c5c5c" title="深灰" onclick="selectColor('#5c5c5c')"></button>
                 </div>
                 <input type="color" id="courseColorInput" value="#5b7c99">
             </div>
@@ -314,7 +341,7 @@
 
         // --- 主題切換邏輯 ---
         function setTheme(theme) {
-            document.body.classList.remove('theme-gray', 'theme-black');
+            document.body.classList.remove('theme-gray', 'theme-black', 'theme-cool', 'theme-warm');
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
 
             if (theme === 'gray') {
@@ -323,6 +350,12 @@
             } else if (theme === 'black') {
                 document.body.classList.add('theme-black');
                 document.getElementById('btn-black').classList.add('active');
+            } else if (theme === 'cool') {
+                document.body.classList.add('theme-cool');
+                document.getElementById('btn-cool').classList.add('active');
+            } else if (theme === 'warm') {
+                document.body.classList.add('theme-warm');
+                document.getElementById('btn-warm').classList.add('active');
             } else {
                 document.getElementById('btn-white').classList.add('active');
             }
@@ -482,15 +515,12 @@
             const originalCourse = courses.find(c => c.id === currentEditId);
             if (!originalCourse) return;
 
-            // 將編輯狀態轉為「新增」模式，並填入複製資料
             currentEditId = null;
             document.getElementById('modalTitle').textContent = '複製課程 (請選擇新時間/星期)';
             
-            // 預設將星期往後推一天，方便快速排課 (若週六則循環至週日)
             const nextDay = (originalCourse.startDay + 1) % 7;
             document.getElementById('startDaySelect').value = nextDay;
             
-            // 隱藏刪除與複製按鈕，保持新增狀態
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('copyBtn').style.display = 'none';
             
