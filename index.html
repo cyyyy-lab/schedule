@@ -18,6 +18,16 @@
             --hover-bg: #f0f7ff;
         }
 
+        body.theme-lightgreen {
+            --bg-color: #e8f5e9;
+            --card-bg: #ffffff;
+            --text-color: #2e4d32;
+            --subtext-color: #5c8261;
+            --border-color: #c8e6c9;
+            --header-bg: #dcedc8;
+            --hover-bg: #f1f8e9;
+        }
+
         body.theme-gray {
             --bg-color: #333333;
             --card-bg: #424242;
@@ -125,7 +135,7 @@
 
         .grid-body {
             display: grid; grid-template-columns: 50px repeat(7, 1fr);
-            grid-template-rows: repeat(15, var(--grid-size)); position: relative;
+            position: relative;
         }
 
         .grid-cell { border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); background-color: var(--card-bg); cursor: pointer; }
@@ -140,7 +150,6 @@
 
         .course-layer { position: absolute; top: 0; left: 50px; right: 0; bottom: 0; pointer-events: none; }
 
-        /* 卡片共用樣式：所有文字均水平與垂直置中 */
         .course-card {
             position: absolute; pointer-events: auto; border-radius: 4px; padding: 2px 4px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -153,36 +162,25 @@
         .course-time { font-weight: bold; opacity: 0.95; white-space: nowrap; }
         .course-duration { opacity: 0.85; white-space: nowrap; }
 
-        /* --- 1. 小於 10 分鐘：微型尺寸併排顯示 (0.62rem) --- */
-        .course-card.tiny-card {
-            flex-direction: row; justify-content: center; align-items: center; gap: 3px; padding: 0 2px;
-        }
+        .course-card.tiny-card { flex-direction: row; justify-content: center; align-items: center; gap: 3px; padding: 0 2px; }
         .course-card.tiny-card .course-title,
         .course-card.tiny-card .course-time,
         .course-card.tiny-card .course-duration { font-size: 0.62rem; white-space: nowrap; }
 
-        /* --- 2. 10 分鐘 ~ 19 分鐘：適度加大字體併排顯示 (0.75rem) --- */
-        .course-card.short-card {
-            flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
-        }
+        .course-card.short-card { flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px; }
         .course-card.short-card .course-title,
         .course-card.short-card .course-time,
         .course-card.short-card .course-duration { font-size: 0.75rem; white-space: nowrap; }
 
-        /* --- 3. 20 分鐘：併排顯示 --- */
-        .course-card.twenty-min-card {
-            flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px;
-        }
+        .course-card.twenty-min-card { flex-direction: row; justify-content: center; align-items: center; gap: 4px; padding: 0 4px; }
         .course-card.twenty-min-card .course-title { font-size: 0.8rem; white-space: nowrap; }
         .course-card.twenty-min-card .course-time { font-size: 0.75rem; white-space: nowrap; }
         .course-card.twenty-min-card .course-duration { font-size: 0.7rem; white-space: nowrap; }
 
-        /* --- 4. 21 分鐘 ~ 59 分鐘：垂直排列，適度加大字體 --- */
         .course-card.medium-card .course-title { font-size: 0.85rem; margin-bottom: 2px; }
         .course-card.medium-card .course-time { font-size: 0.78rem; }
         .course-card.medium-card .course-duration { font-size: 0.7rem; }
 
-        /* --- 5. 大於或等於 1 小時 (≥ 60 分鐘)：垂直排列，再進一步放大字體 --- */
         .course-card.xlarge-card .course-title { font-size: 1.0rem; margin-bottom: 3px; }
         .course-card.xlarge-card .course-time { font-size: 0.88rem; }
         .course-card.xlarge-card .course-duration { font-size: 0.8rem; }
@@ -232,12 +230,13 @@
     <!-- 分頁切換頁籤 -->
     <div class="tab-container">
         <button class="tab-btn active" id="tab-1" onclick="switchTab(1)">週表 1</button>
-        <button class="tab-btn" id="tab-2" onclick="switchTab(2)">週表 2</button>
+        <button class="tab-btn" id="tab-2" onclick="switchTab(2)">週表 2 (大夜班)</button>
     </div>
 
     <div class="theme-switcher">
         <span>背景主題：</span>
         <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
+        <button class="theme-btn" id="btn-lightgreen" onclick="setTheme('lightgreen')">淡綠色</button>
         <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">淺冷色</button>
         <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')">暖色</button>
         <button class="theme-btn" id="btn-gray" onclick="setTheme('gray')">灰色</button>
@@ -270,7 +269,7 @@
             <h3 id="modalTitle">新增課程</h3>
             <div class="form-group">
                 <label>課程名稱</label>
-                <input type="text" id="courseTitleInput" placeholder="例如：團隊早會">
+                <input type="text" id="courseTitleInput" placeholder="例如：夜班值勤">
             </div>
             <div class="form-group">
                 <label>星期 (橫向跨度)</label>
@@ -292,11 +291,11 @@
             </div>
             <div class="form-group">
                 <label>開始時間</label>
-                <input type="time" id="startTimeInput" min="06:00" max="21:00" value="08:00">
+                <input type="time" id="startTimeInput">
             </div>
             <div class="form-group">
                 <label>結束時間</label>
-                <input type="time" id="endTimeInput" min="06:00" max="21:00" value="08:30">
+                <input type="time" id="endTimeInput">
             </div>
             <div class="form-group">
                 <label>卡片底色</label>
@@ -336,28 +335,28 @@
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
 
+        // 設定各分頁對應的時間軸（小時列表）
+        const TAB_HOURS = {
+            1: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], // 06:00 ~ 21:00
+            2: [20,21,22,23,0,1,2,3,4,5]                  // 20:00 ~ 06:00 (跨夜大夜班)
+        };
+
         let currentTab = 1;
         let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v1')) || {
             1: { title: '週表 1', courses: [] },
-            2: { title: '週表 2', courses: [] }
+            2: { title: '週表 2 (大夜班)', courses: [] }
         };
-
-        // 舊資料相容遷移
-        const oldData = localStorage.getItem('my_schedule_data_v2');
-        if (oldData && (!schedulesData[1].courses || schedulesData[1].courses.length === 0)) {
-            try {
-                schedulesData[1].courses = JSON.parse(oldData);
-                localStorage.removeItem('my_schedule_data_v2');
-            } catch(e) {}
-        }
 
         let currentEditId = null;
 
         function setTheme(theme) {
-            document.body.classList.remove('theme-gray', 'theme-black', 'theme-cool', 'theme-warm');
+            document.body.classList.remove('theme-gray', 'theme-black', 'theme-cool', 'theme-warm', 'theme-lightgreen');
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
 
-            if (theme === 'gray') {
+            if (theme === 'lightgreen') {
+                document.body.classList.add('theme-lightgreen');
+                document.getElementById('btn-lightgreen').classList.add('active');
+            } else if (theme === 'gray') {
                 document.body.classList.add('theme-gray');
                 document.getElementById('btn-gray').classList.add('active');
             } else if (theme === 'black') {
@@ -378,20 +377,29 @@
         const savedTheme = localStorage.getItem('my_schedule_theme') || 'white';
         setTheme(savedTheme);
 
-        // 初始化時間網格
-        for (let hour = 6; hour <= 20; hour++) {
-            const timeCell = document.createElement('div');
-            timeCell.className = 'grid-cell time-cell';
-            timeCell.textContent = `${hour < 10 ? '0' + hour : hour}:00`;
-            gridBody.appendChild(timeCell);
+        // 重新繪製時間軸與背景網格
+        function buildGrid() {
+            gridBody.innerHTML = '';
+            const hours = TAB_HOURS[currentTab];
+            gridBody.style.gridTemplateRows = `repeat(${hours.length}, ${HOUR_HEIGHT}px)`;
 
-            for (let day = 0; day < 7; day++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'grid-cell';
-                const startH = hour < 10 ? '0' + hour : hour;
-                const endH = (hour + 1) < 10 ? '0' + (hour + 1) : (hour + 1);
-                emptyCell.onclick = () => openAddModal(day, `${startH}:00`, `${endH}:00`);
-                gridBody.appendChild(emptyCell);
+            for (let i = 0; i < hours.length; i++) {
+                const hour = hours[i];
+                const nextHour = (hour + 1) % 24;
+
+                const timeCell = document.createElement('div');
+                timeCell.className = 'grid-cell time-cell';
+                timeCell.textContent = `${hour < 10 ? '0' + hour : hour}:00`;
+                gridBody.appendChild(timeCell);
+
+                for (let day = 0; day < 7; day++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'grid-cell';
+                    const startH = hour < 10 ? '0' + hour : hour;
+                    const endH = nextHour < 10 ? '0' + nextHour : nextHour;
+                    emptyCell.onclick = () => openAddModal(day, `${startH}:00`, `${endH}:00`);
+                    gridBody.appendChild(emptyCell);
+                }
             }
         }
 
@@ -400,6 +408,7 @@
             document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
                 btn.classList.toggle('active', idx + 1 === tabIndex);
             });
+            buildGrid();
             updateHeaderAndCourses();
         }
 
@@ -423,6 +432,21 @@
         function timeToMinutes(timeStr) {
             const [h, m] = timeStr.split(':').map(Number);
             return h * 60 + m;
+        }
+
+        // 根據當前分頁計算時間對應頂部的偏移像素 (Top Offset)
+        function calculateTopOffset(timeStr) {
+            const min = timeToMinutes(timeStr);
+            const hours = TAB_HOURS[currentTab];
+            const baseStartMin = hours[0] * 60;
+
+            let diffMin = min - baseStartMin;
+            // 如果分頁2（跨夜）遇過夜：時間在 00:00 ~ 06:00
+            if (currentTab === 2 && min < baseStartMin) {
+                diffMin += 24 * 60; // 加 24 小時轉換
+            }
+
+            return (diffMin / 60) * HOUR_HEIGHT;
         }
 
         function getDurationText(minutes) {
@@ -449,10 +473,10 @@
                 card.style.color = c.textColor || DEFAULT_TEXT_COLOR;
 
                 const startMin = timeToMinutes(c.startTime);
-                const endMin = timeToMinutes(c.endTime);
-                const baseMin = 6 * 60;
+                let endMin = timeToMinutes(c.endTime);
+                if (endMin <= startMin) endMin += 24 * 60; // 處理跨夜時長
 
-                const top = ((startMin - baseMin) / 60) * HOUR_HEIGHT;
+                const top = calculateTopOffset(c.startTime);
                 const durationMinutes = endMin - startMin;
                 const durationText = getDurationText(durationMinutes);
                 let calculatedHeight = (durationMinutes / 60) * HOUR_HEIGHT;
@@ -469,42 +493,21 @@
 
                 card.title = `${c.title}\n${c.startTime} - ${c.endTime} (${durationText})`;
 
-                // 判斷時長套用對應級距
                 if (durationMinutes < 10) {
                     card.classList.add('tiny-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime}-${c.endTime}</div>
-                        <div class="course-duration">(${durationText})</div>
-                    `;
+                    card.innerHTML = `<div class="course-title">${c.title}</div><div class="course-time">${c.startTime}-${c.endTime}</div><div class="course-duration">(${durationText})</div>`;
                 } else if (durationMinutes <= 19) {
                     card.classList.add('short-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime}-${c.endTime}</div>
-                        <div class="course-duration">(${durationText})</div>
-                    `;
+                    card.innerHTML = `<div class="course-title">${c.title}</div><div class="course-time">${c.startTime}-${c.endTime}</div><div class="course-duration">(${durationText})</div>`;
                 } else if (durationMinutes === 20) {
                     card.classList.add('twenty-min-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime}-${c.endTime}</div>
-                        <div class="course-duration">(${durationText})</div>
-                    `;
+                    card.innerHTML = `<div class="course-title">${c.title}</div><div class="course-time">${c.startTime}-${c.endTime}</div><div class="course-duration">(${durationText})</div>`;
                 } else if (durationMinutes >= 60) {
                     card.classList.add('xlarge-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime}-${c.endTime}</div>
-                        <div class="course-duration">${durationText}</div>
-                    `;
+                    card.innerHTML = `<div class="course-title">${c.title}</div><div class="course-time">${c.startTime}-${c.endTime}</div><div class="course-duration">${durationText}</div>`;
                 } else {
                     card.classList.add('medium-card');
-                    card.innerHTML = `
-                        <div class="course-title">${c.title}</div>
-                        <div class="course-time">${c.startTime}-${c.endTime}</div>
-                        <div class="course-duration">${durationText}</div>
-                    `;
+                    card.innerHTML = `<div class="course-title">${c.title}</div><div class="course-time">${c.startTime}-${c.endTime}</div><div class="course-duration">${durationText}</div>`;
                 }
 
                 card.onclick = (e) => {
@@ -516,8 +519,21 @@
             });
         }
 
+        function setModalTimeBounds() {
+            const startInput = document.getElementById('startTimeInput');
+            const endInput = document.getElementById('endTimeInput');
+            if (currentTab === 1) {
+                startInput.min = "06:00"; startInput.max = "21:00";
+                endInput.min = "06:00"; endInput.max = "21:00";
+            } else {
+                startInput.removeAttribute('min'); startInput.removeAttribute('max');
+                endInput.removeAttribute('min'); endInput.removeAttribute('max');
+            }
+        }
+
         function openAddModal(day, startTime, endTime) {
             currentEditId = null;
+            setModalTimeBounds();
             document.getElementById('modalTitle').textContent = '新增課程';
             document.getElementById('courseTitleInput').value = '';
             document.getElementById('startDaySelect').value = day;
@@ -536,6 +552,7 @@
             if (!course) return;
 
             currentEditId = id;
+            setModalTimeBounds();
             document.getElementById('modalTitle').textContent = '編輯課程';
             document.getElementById('courseTitleInput').value = course.title;
             document.getElementById('startDaySelect').value = course.startDay;
@@ -563,7 +580,8 @@
                 return;
             }
 
-            if (timeToMinutes(startTime) >= timeToMinutes(endTime)) {
+            // 非跨夜分頁的結束時間檢查
+            if (currentTab === 1 && timeToMinutes(startTime) >= timeToMinutes(endTime)) {
                 alert('結束時間必須晚於開始時間！');
                 return;
             }
@@ -629,6 +647,8 @@
             localStorage.setItem('my_schedules_multitab_v1', JSON.stringify(schedulesData));
         }
 
+        // 預設建立並渲染
+        buildGrid();
         updateHeaderAndCourses();
     </script>
 </body>
