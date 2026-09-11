@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的週表</title>
+    <title>我的週表與目標追蹤</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -86,9 +86,7 @@
             border-radius: 4px; font-size: 0.75rem; margin-left: 10px; cursor: pointer; vertical-align: middle;
         }
 
-        .tab-container {
-            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px;
-        }
+        .tab-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
 
         .tab-btn {
             padding: 5px 16px; border: 1px solid var(--border-color); background: var(--card-bg);
@@ -114,9 +112,9 @@
         .theme-btn.active { border-color: var(--primary-color); background-color: var(--primary-color); color: white; }
 
         .schedule-container {
-            width: 100%; max-height: calc(100vh - 160px); overflow-y: auto; overflow-x: auto;
-            background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            -webkit-overflow-scrolling: touch;
+            width: 100%; max-height: calc(100vh - 220px); overflow-y: auto; overflow-x: auto;
+            background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            -webkit-overflow-scrolling: touch; margin-bottom: 15px;
         }
 
         .schedule-grid-wrapper { min-width: 600px; width: 100%; position: relative; }
@@ -149,11 +147,12 @@
 
         .time-cell {
             background-color: var(--header-bg); font-size: 0.75rem; display: flex;
-            align-items: flex-start; justify-content: center; padding-top: 4px;
+            align-items: flex-start; justify-content: center; padding-top: 2px;
             position: sticky; left: 0; z-index: 2; color: var(--subtext-color);
             border-right: 1px solid var(--border-color); text-align: center;
         }
 
+        /* 絕對精確對齊層 */
         .course-layer { position: absolute; top: 0; left: 50px; right: 0; bottom: 0; pointer-events: none; }
 
         .course-card {
@@ -191,6 +190,46 @@
         .course-card.xlarge-card .course-time { font-size: 0.88rem; }
         .course-card.xlarge-card .course-duration { font-size: 0.8rem; }
 
+        /* --- 目標與習慣打卡區塊 --- */
+        .goal-container {
+            background: var(--card-bg); border-radius: 8px; padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); max-width: 800px; margin: 0 auto 20px auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .goal-header { font-size: 1.05rem; font-weight: bold; margin-bottom: 12px; color: var(--text-color); display: flex; align-items: center; gap: 6px; }
+
+        .goal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+
+        .goal-input-group { display: flex; flex-direction: column; gap: 4px; }
+        .goal-input-group label { font-size: 0.8rem; color: var(--subtext-color); font-weight: bold; }
+        .goal-input-group input {
+            padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px;
+            background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;
+        }
+
+        .check-card {
+            background: var(--header-bg); border-radius: 6px; padding: 10px; margin-top: 10px;
+            display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border-color);
+        }
+
+        .check-left { display: flex; align-items: center; gap: 10px; }
+        .check-left input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .check-text { font-size: 0.9rem; font-weight: bold; }
+
+        .progress-section { margin-top: 12px; }
+        .progress-bar-bg { width: 100%; height: 12px; background: var(--border-color); border-radius: 6px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.4s ease; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--subtext-color); margin-top: 4px; }
+
+        .feedback-box {
+            margin-top: 12px; padding: 10px; border-radius: 6px; font-size: 0.85rem;
+            font-weight: bold; text-align: center; display: none;
+        }
+        .feedback-box.praise { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .feedback-box.encourage { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+
+        /* Modal styling */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 10; justify-content: center; align-items: center;
@@ -267,6 +306,45 @@
         </div>
     </div>
 
+    <!-- 週表 1 下方的目標與習慣打卡模組 -->
+    <div class="goal-container" id="goalContainer">
+        <div class="goal-header">🎯 目標與每日打卡卡片</div>
+        <div class="goal-grid">
+            <div class="goal-input-group">
+                <label>目標名稱</label>
+                <input type="text" id="goalNameInput" placeholder="例如：改善體型" onchange="saveGoalData()">
+            </div>
+            <div class="goal-input-group">
+                <label>行為 (可達成目標的行為)</label>
+                <input type="text" id="goalActionInput" placeholder="例如：[每天]運動一小時" onchange="saveGoalData()">
+            </div>
+            <div class="goal-input-group">
+                <label>目標期限</label>
+                <input type="date" id="goalDeadlineInput" onchange="saveGoalData()">
+            </div>
+        </div>
+
+        <div class="check-card">
+            <div class="check-left">
+                <input type="checkbox" id="dailyCheckInput" onchange="toggleDailyCheck()">
+                <div class="check-text" id="checkLabelText">今日打卡：[每天]運動一小時</div>
+            </div>
+            <span style="font-size:0.75rem; color:var(--subtext-color);">（每日 04:00 AM 自動重置）</span>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-info">
+                <span>目標進度</span>
+                <span id="progressText">0% (已打卡 0 天 / 總需 0 天)</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+        </div>
+
+        <div class="feedback-box" id="feedbackBox"></div>
+    </div>
+
     <p class="tip">💡 點擊空白格新增；點擊課程卡片可修改時間、複製或刪除</p>
 
     <!-- 課程編輯 Modal -->
@@ -341,16 +419,26 @@
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
 
-        // 各分頁對應的時間軸（小時列表）
         const TAB_HOURS = {
-            1: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],      // 06:00 ~ 21:00
-            2: [13,14,15,16,17,18,19,20,21,22,23,0,1,2]          // 13:00 ~ 03:00 (跨夜)
+            1: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],      
+            2: [13,14,15,16,17,18,19,20,21,22,23,0,1,2]          
         };
 
         let currentTab = 1;
-        let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v2')) || {
+        let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v3')) || {
             1: { title: '週表 1', courses: [] },
             2: { title: '週表 2 (13:00-03:00)', courses: [] }
+        };
+
+        // --- 目標與打卡資料 ---
+        let goalData = JSON.parse(localStorage.getItem('my_goal_data_v1')) || {
+            name: '改善體型',
+            action: '[每天]運動一小時',
+            startDate: new Date().toISOString().split('T')[0],
+            deadline: '',
+            checkedToday: false,
+            checkedDaysCount: 0,
+            lastResetTime: Date.now()
         };
 
         let currentEditId = null;
@@ -413,6 +501,14 @@
             document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
                 btn.classList.toggle('active', idx + 1 === tabIndex);
             });
+
+            const goalContainer = document.getElementById('goalContainer');
+            if (currentTab === 1) {
+                goalContainer.style.display = 'block';
+            } else {
+                goalContainer.style.display = 'none';
+            }
+
             buildGrid();
             updateHeaderAndCourses();
         }
@@ -439,14 +535,13 @@
             return h * 60 + m;
         }
 
-        // 精確計算絕對Top與Height位置
+        // 精確對齊計算：無多餘邊框偏移
         function calculateTopOffset(timeStr) {
             const min = timeToMinutes(timeStr);
             const hours = TAB_HOURS[currentTab];
             const baseStartMin = hours[0] * 60;
 
             let diffMin = min - baseStartMin;
-            // 處理跨夜時段 (例如 00:00~03:00 屬於13:00開始後的隔天)
             if (currentTab === 2 && min < baseStartMin) {
                 diffMin += 24 * 60;
             }
@@ -479,7 +574,7 @@
 
                 const startMin = timeToMinutes(c.startTime);
                 let endMin = timeToMinutes(c.endTime);
-                if (endMin <= startMin) endMin += 24 * 60; // 跨夜時長計算
+                if (endMin <= startMin) endMin += 24 * 60;
 
                 const top = calculateTopOffset(c.startTime);
                 const durationMinutes = endMin - startMin;
@@ -491,7 +586,7 @@
                 const leftPercent = (c.startDay / 7) * 100;
                 const widthPercent = (c.daySpan / 7) * 100;
 
-                // 精確貼合邊框 (移除多餘的 offset px 補償)
+                // 完美與邊框無縫對齊
                 card.style.top = `${top}px`;
                 card.style.height = `${finalHeight}px`;
                 card.style.left = `${leftPercent}%`;
@@ -523,6 +618,104 @@
 
                 courseLayer.appendChild(card);
             });
+        }
+
+        /* --- 4:00 AM 重置邏輯與目標管理 --- */
+        function check4AMReset() {
+            const now = new Date();
+            const lastReset = new Date(goalData.lastResetTime || 0);
+
+            // 計算最近的一個 4:00 AM 時間點
+            const target4AM = new Date(now);
+            if (now.getHours() < 4) {
+                target4AM.setDate(target4AM.getDate() - 1);
+            }
+            target4AM.setHours(4, 0, 0, 0);
+
+            // 若上次重置時間早於最近的 4:00 AM，則觸發自動重置
+            if (lastReset < target4AM) {
+                goalData.checkedToday = false;
+                goalData.lastResetTime = Date.now();
+                saveGoalDataToStorage();
+            }
+        }
+
+        function loadGoalUI() {
+            check4AMReset();
+            document.getElementById('goalNameInput').value = goalData.name || '';
+            document.getElementById('goalActionInput').value = goalData.action || '';
+            document.getElementById('goalDeadlineInput').value = goalData.deadline || '';
+            document.getElementById('dailyCheckInput').checked = !!goalData.checkedToday;
+            document.getElementById('checkLabelText').textContent = `今日打卡：${goalData.action || '未指定行為'}`;
+            
+            updateGoalProgress();
+        }
+
+        function saveGoalData() {
+            goalData.name = document.getElementById('goalNameInput').value.trim();
+            goalData.action = document.getElementById('goalActionInput').value.trim();
+            goalData.deadline = document.getElementById('goalDeadlineInput').value;
+            
+            document.getElementById('checkLabelText').textContent = `今日打卡：${goalData.action || '未指定行為'}`;
+            saveGoalDataToStorage();
+            updateGoalProgress();
+        }
+
+        function toggleDailyCheck() {
+            const isChecked = document.getElementById('dailyCheckInput').checked;
+            if (isChecked && !goalData.checkedToday) {
+                goalData.checkedDaysCount = (goalData.checkedDaysCount || 0) + 1;
+            } else if (!isChecked && goalData.checkedToday) {
+                goalData.checkedDaysCount = Math.max(0, (goalData.checkedDaysCount || 1) - 1);
+            }
+            goalData.checkedToday = isChecked;
+            saveGoalDataToStorage();
+            updateGoalProgress();
+        }
+
+        function updateGoalProgress() {
+            const feedbackBox = document.getElementById('feedbackBox');
+            if (!goalData.deadline) {
+                document.getElementById('progressText').textContent = `請先設定目標期限`;
+                document.getElementById('progressBarFill').style.width = `0%`;
+                feedbackBox.style.display = 'none';
+                return;
+            }
+
+            const start = new Date(goalData.startDate || new Date());
+            const end = new Date(goalData.deadline);
+            
+            // 計算總天數
+            const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+            const checkedDays = goalData.checkedDaysCount || 0;
+
+            let percentage = Math.min(100, Math.round((checkedDays / totalDays) * 100));
+            if (isNaN(percentage)) percentage = 0;
+
+            document.getElementById('progressBarFill').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${percentage}% (已打卡 ${checkedDays} 天 / 總需 ${totalDays} 天)`;
+
+            // 判斷是否過期與給予反饋
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+
+            if (today >= end) {
+                feedbackBox.style.display = 'block';
+                if (percentage >= 100) {
+                    feedbackBox.className = 'feedback-box praise';
+                    feedbackBox.innerHTML = `🎉 🎉 太棒了！你的目標期限已到，並且成功達到 100% 進度！你的毅力令人敬佩！`;
+                } else {
+                    feedbackBox.className = 'feedback-box encourage';
+                    feedbackBox.innerHTML = `💪 目標期限已到，目前完成進度為 ${percentage}%。雖然沒有達到 100%，但每一次的付出的汗水都是進步！繼續加油，下個目標一定能成功！`;
+                }
+            } else {
+                feedbackBox.style.display = 'none';
+            }
+        }
+
+        function saveGoalDataToStorage() {
+            localStorage.setItem('my_goal_data_v1', JSON.stringify(goalData));
         }
 
         function openAddModal(day, startTime, endTime) {
@@ -558,19 +751,14 @@
             modalOverlay.style.display = 'flex';
         }
 
-        function closeModal() {
-            modalOverlay.style.display = 'none';
-        }
+        function closeModal() { modalOverlay.style.display = 'none'; }
 
         function saveCourse() {
             const title = document.getElementById('courseTitleInput').value.trim();
             const startTime = document.getElementById('startTimeInput').value;
             const endTime = document.getElementById('endTimeInput').value;
 
-            if (!title) {
-                alert('請輸入課程名稱');
-                return;
-            }
+            if (!title) { alert('請輸入課程名稱'); return; }
 
             if (currentTab === 1 && timeToMinutes(startTime) >= timeToMinutes(endTime)) {
                 alert('結束時間必須晚於開始時間！');
@@ -607,14 +795,10 @@
 
             currentEditId = null;
             document.getElementById('modalTitle').textContent = '複製課程 (請選擇新時間/星期)';
-            
-            const nextDay = (originalCourse.startDay + 1) % 7;
-            document.getElementById('startDaySelect').value = nextDay;
-            
+            document.getElementById('startDaySelect').value = (originalCourse.startDay + 1) % 7;
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('copyBtn').style.display = 'none';
-            
-            alert('已為您複製課堂資訊！請選擇複製後目標的「星期」或「時間」，再點擊儲存。');
+            alert('已為您複製課堂資訊！請選擇目標「星期」或「時間」，再點擊儲存。');
         }
 
         function deleteCourse() {
@@ -635,11 +819,16 @@
         }
 
         function saveAllData() {
-            localStorage.setItem('my_schedules_multitab_v2', JSON.stringify(schedulesData));
+            localStorage.setItem('my_schedules_multitab_v3', JSON.stringify(schedulesData));
         }
 
+        // 初始化載入
         buildGrid();
         updateHeaderAndCourses();
+        loadGoalUI();
+
+        // 智慧定時檢查：每分鐘檢查一次是否跨越 4:00 AM
+        setInterval(check4AMReset, 60000);
     </script>
 </body>
 </html>
