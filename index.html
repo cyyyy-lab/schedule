@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary-color: #4a90e2;
-            --grid-size: 120px;
+            --grid-size: 100px;
             
             --bg-color: #fafafa;
             --card-bg: #ffffff;
@@ -99,9 +99,23 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
-        .theme-switcher {
-            display: flex; justify-content: center; align-items: center; gap: 6px;
+        .controls-bar {
+            display: flex; justify-content: center; align-items: center; gap: 12px;
             margin-bottom: 12px; font-size: 0.8rem; color: var(--subtext-color); flex-wrap: wrap;
+        }
+
+        .time-range-control {
+            display: flex; align-items: center; gap: 4px; background: var(--card-bg);
+            padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border-color);
+        }
+
+        .time-range-control select {
+            border: none; background: transparent; color: var(--text-color);
+            font-size: 0.78rem; outline: none; cursor: pointer; font-weight: bold;
+        }
+
+        .theme-switcher {
+            display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap;
         }
 
         .theme-btn {
@@ -161,6 +175,13 @@
             text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.25); z-index: 1;
             word-break: break-all; overflow: hidden; cursor: pointer; box-sizing: border-box;
             line-height: 1.25; transition: transform 0.1s;
+        }
+
+        /* 透明背景卡片樣式 */
+        .course-card.transparent-card {
+            border: 2px dashed var(--subtext-color);
+            box-shadow: none;
+            backdrop-filter: blur(2px);
         }
 
         .course-title { font-weight: bold; }
@@ -237,7 +258,7 @@
             background: rgba(0,0,0,0.6); z-index: 10; justify-content: center; align-items: center;
         }
         .modal {
-            background: white; color: #333; padding: 20px; border-radius: 8px; width: 90%; max-width: 360px;
+            background: white; color: #333; padding: 20px; border-radius: 8px; width: 90%; max-width: 380px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .modal h3 { margin-bottom: 15px; font-size: 1.1rem; color: #333; text-align: center; }
@@ -249,10 +270,11 @@
 
         .color-presets { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
         .color-preset-btn {
-            width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent;
-            cursor: pointer; transition: transform 0.1s;
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ddd;
+            cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold;
         }
         .color-preset-btn:hover { transform: scale(1.15); }
+        .color-preset-btn.transparent-btn { background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 50% / 10px 10px; color: #333; }
 
         .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; gap: 6px; flex-wrap: wrap; }
         .btn { padding: 8px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1; white-space: nowrap; text-align: center; }
@@ -274,21 +296,33 @@
         <button class="clear-btn" id="clearBtn" onclick="clearAllData()">清空此頁</button>
     </div>
 
-    <!-- 頁籤導覽 (包含獨立目標打卡頁籤) -->
+    <!-- 頁籤導覽 -->
     <div class="tab-container">
         <button class="tab-btn active" id="tab-1" onclick="switchTab(1)">週表 1</button>
-        <button class="tab-btn" id="tab-2" onclick="switchTab(2)">週表 2 (13:00-03:00)</button>
+        <button class="tab-btn" id="tab-2" onclick="switchTab(2)">週表 2</button>
         <button class="tab-btn" id="tab-3" onclick="switchTab(3)">🎯 目標打卡</button>
     </div>
 
-    <div class="theme-switcher">
-        <span>背景主題：</span>
-        <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
-        <button class="theme-btn" id="btn-lightgreen" onclick="setTheme('lightgreen')">淡綠色</button>
-        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">淺冷色</button>
-        <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')">暖色</button>
-        <button class="theme-btn" id="btn-gray" onclick="setTheme('gray')">灰色</button>
-        <button class="theme-btn" id="btn-black" onclick="setTheme('black')">黑色</button>
+    <div class="controls-bar" id="controlsBar">
+        <div class="time-range-control">
+            <span>⏰ 顯示時間：</span>
+            <select id="timeRangeSelect" onchange="handleTimeRangeChange(this.value)">
+                <option value="0-24">全天 (00:00 - 24:00)</option>
+                <option value="6-24">日間 (06:00 - 24:00)</option>
+                <option value="18-6">夜間 (18:00 - 06:00)</option>
+                <option value="custom">⚙️ 自訂區間...</option>
+            </select>
+        </div>
+
+        <div class="theme-switcher">
+            <span>背景主題：</span>
+            <button class="theme-btn active" id="btn-white" onclick="setTheme('white')">白色</button>
+            <button class="theme-btn" id="btn-lightgreen" onclick="setTheme('lightgreen')">淡綠色</button>
+            <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">淺冷色</button>
+            <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')">暖色</button>
+            <button class="theme-btn" id="btn-gray" onclick="setTheme('gray')">灰色</button>
+            <button class="theme-btn" id="btn-black" onclick="setTheme('black')">黑色</button>
+        </div>
     </div>
 
     <!-- 週表主區域 -->
@@ -400,6 +434,7 @@
             <div class="form-group">
                 <label>卡片底色</label>
                 <div class="color-presets">
+                    <!-- 預設原有 9 色 -->
                     <button class="color-preset-btn" style="background:#6b8eac" title="柔藍" onclick="selectColor('#6b8eac')"></button>
                     <button class="color-preset-btn" style="background:#7ca982" title="鼠尾草綠" onclick="selectColor('#7ca982')"></button>
                     <button class="color-preset-btn" style="background:#d4a373" title="燕麥奶" onclick="selectColor('#d4a373')"></button>
@@ -409,11 +444,18 @@
                     <button class="color-preset-btn" style="background:#81b29a" title="薄荷青綠" onclick="selectColor('#81b29a')"></button>
                     <button class="color-preset-btn" style="background:#a3b18a" title="橄欖茶綠" onclick="selectColor('#a3b18a')"></button>
                     <button class="color-preset-btn" style="background:#8d99ae" title="石墨霧灰" onclick="selectColor('#8d99ae')"></button>
+                    
+                    <!-- 新增 2 個新顏色 -->
+                    <button class="color-preset-btn" style="background:#e8a598" title="粉櫻粉" onclick="selectColor('#e8a598')"></button>
+                    <button class="color-preset-btn" style="background:#4a5568" title="深藍灰" onclick="selectColor('#4a5568')"></button>
+                    
+                    <!-- 新增 1 個透明色 -->
+                    <button class="color-preset-btn transparent-btn" title="透明色" onclick="selectColor('transparent')">透</button>
                 </div>
                 <input type="color" id="courseColorInput" value="#6b8eac">
             </div>
             <div class="form-group">
-                <label>自訂文字顏色 (預設為白色)</label>
+                <label>自訂文字顏色</label>
                 <input type="color" id="courseTextColorInput" value="#ffffff">
             </div>
             <div class="modal-actions">
@@ -435,27 +477,36 @@
         const editTitleBtn = document.getElementById('editTitleBtn');
         const clearBtn = document.getElementById('clearBtn');
         const tipText = document.getElementById('tipText');
+        const controlsBar = document.getElementById('controlsBar');
         
-        const HOUR_HEIGHT = 120;
+        const HOUR_HEIGHT = 100;
         const DEFAULT_COLOR = '#6b8eac';
         const DEFAULT_TEXT_COLOR = '#ffffff';
 
-        const TAB_HOURS = {
-            1: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],      
-            2: [13,14,15,16,17,18,19,20,21,22,23,0,1,2]          
-        };
-
         let currentTab = 1;
-        let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v3')) || {
-            1: { title: '週表 1', courses: [] },
-            2: { title: '週表 2 (13:00-03:00)', courses: [] }
+
+        // 生成小時陣列輔助函式
+        function generateHours(start, end) {
+            let hours = [];
+            if (start < end) {
+                for (let i = start; i < end; i++) hours.push(i);
+            } else {
+                for (let i = start; i < 24; i++) hours.push(i);
+                for (let i = 0; i < end; i++) hours.push(i);
+            }
+            return hours;
+        }
+
+        let schedulesData = JSON.parse(localStorage.getItem('my_schedules_multitab_v4')) || {
+            1: { title: '週表 1', courses: [], timeRange: '0-24' },
+            2: { title: '週表 2', courses: [], timeRange: '0-24' }
         };
 
         // --- 目標與打卡資料 ---
         let goalData = JSON.parse(localStorage.getItem('my_goal_data_v2')) || {
             name: '改善體型',
             action: '運動一小時',
-            resetDays: 1, // 預設每天
+            resetDays: 1,
             startDate: new Date().toISOString().split('T')[0],
             deadline: '',
             checkedToday: false,
@@ -464,6 +515,12 @@
         };
 
         let currentEditId = null;
+
+        function getTabHours() {
+            const rangeStr = schedulesData[currentTab]?.timeRange || '0-24';
+            const [s, e] = rangeStr.split('-').map(Number);
+            return generateHours(s, e);
+        }
 
         function setTheme(theme) {
             document.body.classList.remove('theme-gray', 'theme-black', 'theme-cool', 'theme-warm', 'theme-lightgreen');
@@ -493,11 +550,50 @@
         const savedTheme = localStorage.getItem('my_schedule_theme') || 'white';
         setTheme(savedTheme);
 
+        function handleTimeRangeChange(val) {
+            if (val === 'custom') {
+                const currentRange = schedulesData[currentTab].timeRange || '0-24';
+                const [curS, curE] = currentRange.split('-');
+                const startInput = prompt('請輸入起始小時 (0-23)：', curS);
+                if (startInput === null) {
+                    syncTimeRangeSelect();
+                    return;
+                }
+                const endInput = prompt('請輸入結束小時 (1-24)：', curE);
+                if (endInput === null) {
+                    syncTimeRangeSelect();
+                    return;
+                }
+
+                let s = parseInt(startInput), e = parseInt(endInput);
+                if (isNaN(s) || isNaN(e) || s < 0 || s > 23 || e < 1 || e > 24 || s === e) {
+                    alert('輸入的時間無效，請重新輸入！');
+                    syncTimeRangeSelect();
+                    return;
+                }
+                val = `${s}-${e}`;
+            }
+
+            schedulesData[currentTab].timeRange = val;
+            saveAllData();
+            buildGrid();
+            renderCourses();
+            syncTimeRangeSelect();
+        }
+
+        function syncTimeRangeSelect() {
+            const range = schedulesData[currentTab]?.timeRange || '0-24';
+            const select = document.getElementById('timeRangeSelect');
+            if (['0-24', '6-24', '18-6'].includes(range)) {
+                select.value = range;
+            } else {
+                select.value = 'custom';
+            }
+        }
+
         function buildGrid() {
             gridBody.innerHTML = '';
-            const hours = TAB_HOURS[currentTab];
-            if (!hours) return;
-
+            const hours = getTabHours();
             gridBody.style.gridTemplateRows = `repeat(${hours.length}, ${HOUR_HEIGHT}px)`;
 
             for (let i = 0; i < hours.length; i++) {
@@ -527,21 +623,22 @@
             });
 
             if (currentTab === 3) {
-                // 切換至【目標打卡】獨立頁籤
                 scheduleView.style.display = 'none';
                 goalView.style.display = 'block';
                 editTitleBtn.style.display = 'none';
                 clearBtn.style.display = 'none';
                 tipText.style.display = 'none';
+                controlsBar.style.display = 'none';
                 scheduleTitleEl.textContent = '🎯 目標與習慣打卡';
                 loadGoalUI();
             } else {
-                // 切換至【週表 1 或 2】
                 scheduleView.style.display = 'block';
                 goalView.style.display = 'none';
                 editTitleBtn.style.display = 'inline-block';
                 clearBtn.style.display = 'inline-block';
                 tipText.style.display = 'block';
+                controlsBar.style.display = 'flex';
+                syncTimeRangeSelect();
                 buildGrid();
                 updateHeaderAndCourses();
             }
@@ -560,7 +657,7 @@
 
         function updateHeaderAndCourses() {
             if (currentTab === 3) return;
-            const tabData = schedulesData[currentTab] || { title: `週表 ${currentTab}`, courses: [] };
+            const tabData = schedulesData[currentTab] || { title: `週表 ${currentTab}`, courses: [], timeRange: '0-24' };
             scheduleTitleEl.textContent = tabData.title;
             document.getElementById(`tab-${currentTab}`).textContent = tabData.title;
             renderCourses();
@@ -573,11 +670,11 @@
 
         function calculateTopOffset(timeStr) {
             const min = timeToMinutes(timeStr);
-            const hours = TAB_HOURS[currentTab];
+            const hours = getTabHours();
             const baseStartMin = hours[0] * 60;
 
             let diffMin = min - baseStartMin;
-            if (currentTab === 2 && min < baseStartMin) {
+            if (diffMin < 0) {
                 diffMin += 24 * 60;
             }
 
@@ -594,7 +691,14 @@
         }
 
         function selectColor(hex) {
-            document.getElementById('courseColorInput').value = hex;
+            if (hex === 'transparent') {
+                document.getElementById('courseColorInput').value = '#ffffff';
+                document.getElementById('courseColorInput').dataset.isTransparent = 'true';
+                document.getElementById('courseTextColorInput').value = '#333333';
+            } else {
+                document.getElementById('courseColorInput').value = hex;
+                document.getElementById('courseColorInput').dataset.isTransparent = 'false';
+            }
         }
 
         function renderCourses() {
@@ -605,7 +709,14 @@
             activeCourses.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'course-card';
-                card.style.backgroundColor = c.color || DEFAULT_COLOR;
+
+                // 判斷是否為透明色
+                if (c.color === 'transparent') {
+                    card.classList.add('transparent-card');
+                    card.style.backgroundColor = 'transparent';
+                } else {
+                    card.style.backgroundColor = c.color || DEFAULT_COLOR;
+                }
                 card.style.color = c.textColor || DEFAULT_TEXT_COLOR;
 
                 const startMin = timeToMinutes(c.startTime);
@@ -660,18 +771,15 @@
             const now = new Date();
             const resetIntervalDays = parseInt(goalData.resetDays || 1);
 
-            // 計算基礎基準點的 4:00 AM
             let baseResetDate = new Date(goalData.lastResetBaseTime || Date.now());
             if (baseResetDate.getHours() < 4) {
                 baseResetDate.setDate(baseResetDate.getDate() - 1);
             }
             baseResetDate.setHours(4, 0, 0, 0);
 
-            // 計算下一次重置的時間點 (基準點 + N 天)
             let nextResetDate = new Date(baseResetDate);
             nextResetDate.setDate(nextResetDate.getDate() + resetIntervalDays);
 
-            // 如果當前時間已經超過了下一次重置點
             if (now >= nextResetDate) {
                 goalData.checkedToday = false;
                 goalData.lastResetBaseTime = now.getTime();
@@ -736,7 +844,6 @@
             const start = new Date(goalData.startDate || new Date());
             const end = new Date(goalData.deadline);
             
-            // 計算總天數與總打卡週期次數
             const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
             const resetDays = parseInt(goalData.resetDays || 1);
             const totalRequiredCheckIns = Math.max(1, Math.ceil(totalDays / resetDays));
@@ -749,7 +856,6 @@
             document.getElementById('progressBarFill').style.width = `${percentage}%`;
             document.getElementById('progressText').textContent = `${percentage}% (已打卡 ${checkedCount} 次 / 總需 ${totalRequiredCheckIns} 次)`;
 
-            // 判斷是否過期與給予誇獎或鼓勵
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             end.setHours(0, 0, 0, 0);
@@ -781,6 +887,7 @@
             document.getElementById('startTimeInput').value = startTime;
             document.getElementById('endTimeInput').value = endTime;
             document.getElementById('courseColorInput').value = DEFAULT_COLOR;
+            document.getElementById('courseColorInput').dataset.isTransparent = 'false';
             document.getElementById('courseTextColorInput').value = DEFAULT_TEXT_COLOR;
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('copyBtn').style.display = 'none';
@@ -798,7 +905,14 @@
             document.getElementById('daySpanSelect').value = course.daySpan;
             document.getElementById('startTimeInput').value = course.startTime;
             document.getElementById('endTimeInput').value = course.endTime;
-            document.getElementById('courseColorInput').value = course.color || DEFAULT_COLOR;
+
+            if (course.color === 'transparent') {
+                document.getElementById('courseColorInput').dataset.isTransparent = 'true';
+            } else {
+                document.getElementById('courseColorInput').value = course.color || DEFAULT_COLOR;
+                document.getElementById('courseColorInput').dataset.isTransparent = 'false';
+            }
+
             document.getElementById('courseTextColorInput').value = course.textColor || DEFAULT_TEXT_COLOR;
             document.getElementById('deleteBtn').style.display = 'inline-block';
             document.getElementById('copyBtn').style.display = 'inline-block';
@@ -814,10 +928,8 @@
 
             if (!title) { alert('請輸入課程名稱'); return; }
 
-            if (currentTab === 1 && timeToMinutes(startTime) >= timeToMinutes(endTime)) {
-                alert('結束時間必須晚於開始時間！');
-                return;
-            }
+            const isTransparent = document.getElementById('courseColorInput').dataset.isTransparent === 'true';
+            const colorVal = isTransparent ? 'transparent' : document.getElementById('courseColorInput').value;
 
             const courseData = {
                 id: currentEditId || Date.now(),
@@ -826,7 +938,7 @@
                 daySpan: parseInt(document.getElementById('daySpanSelect').value),
                 startTime: startTime,
                 endTime: endTime,
-                color: document.getElementById('courseColorInput').value,
+                color: colorVal,
                 textColor: document.getElementById('courseTextColorInput').value
             };
 
@@ -873,14 +985,15 @@
         }
 
         function saveAllData() {
-            localStorage.setItem('my_schedules_multitab_v3', JSON.stringify(schedulesData));
+            localStorage.setItem('my_schedules_multitab_v4', JSON.stringify(schedulesData));
         }
 
         // 初始化
+        syncTimeRangeSelect();
         buildGrid();
         updateHeaderAndCourses();
 
-        // 智慧型輪詢：每一分鐘動態檢查一次是否達到重置條件
+        // 輪詢檢查打卡重置
         setInterval(checkDynamicReset, 60000);
     </script>
 </body>
