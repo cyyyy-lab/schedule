@@ -167,7 +167,14 @@
             border-right: 1px solid var(--border-color); text-align: center;
         }
 
-        .course-layer { position: absolute; top: 0; left: 50px; right: 0; bottom: 0; pointer-events: none; }
+        .course-layer { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    pointer-events: none; 
+}
 
         .course-card {
             position: absolute; pointer-events: auto; border-radius: 4px; padding: 2px 4px;
@@ -339,8 +346,9 @@
                 <div class="header-cell">週六</div>
             </div>
 
-            <div class="grid-body" id="gridBody"></div>
-            <div class="course-layer" id="courseLayer"></div>
+            <div class="grid-body" id="gridBody">
+    <div class="course-layer" id="courseLayer"></div>
+</div>
         </div>
     </div>
 
