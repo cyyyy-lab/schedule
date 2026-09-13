@@ -167,14 +167,7 @@
             border-right: 1px solid var(--border-color); text-align: center;
         }
 
-        .course-layer { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
-    pointer-events: none; 
-}
+        .course-layer { position: absolute; top: 0; left: 50px; right: 0; bottom: 0; pointer-events: none; }
 
         .course-card {
             position: absolute; pointer-events: auto; border-radius: 4px; padding: 2px 4px;
@@ -346,9 +339,10 @@
                 <div class="header-cell">週六</div>
             </div>
 
-            <div class="grid-body" id="gridBody">
-    <div class="course-layer" id="courseLayer"></div>
-</div>
+            <div class="grid-body" id="gridBody"></div>
+            <div class="course-layer" id="courseLayer"></div>
+        </div>
+    </div>
 
     <!-- 獨立分頁：目標與習慣打卡區塊 -->
     <div class="goal-tab-container" id="goalView">
@@ -675,14 +669,24 @@
         }
 
         function calculateTopOffset(timeStr) {
-            const min = timeToMinutes(timeStr);
-            const hours = getTabHours();
-            const baseStartMin = hours[0] * 60;
+    const min = timeToMinutes(timeStr);
+    const hours = getTabHours();
+    
+    // 取得當前表格顯示的第一個小時（例如：06:00 就是 6）
+    const startHour = hours[0];
+    const baseStartMin = startHour * 60;
 
-            let diffMin = min - baseStartMin;
-            if (diffMin < 0) {
-                diffMin += 24 * 60;
-            }
+    // 計算卡片時間相對於表格起點的分鐘差
+    let diffMin = min - baseStartMin;
+    
+    // 處理跨夜/夜間區間 (例如 18:00 - 06:00) 的狀況
+    if (diffMin < 0) {
+        diffMin += 24 * 60;
+    }
+
+    // 將正確的分鐘差轉換為像素高度
+    return (diffMin / 60) * HOUR_HEIGHT;
+}
 
             return (diffMin / 60) * HOUR_HEIGHT;
         }
